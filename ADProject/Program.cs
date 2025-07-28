@@ -30,6 +30,7 @@ builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TagRepository>();
 builder.Services.AddScoped<UserProfileRepository>();
+builder.Services.AddScoped<ActivityRepository>();
 
 var app = builder.Build();
 

@@ -32,6 +32,7 @@ namespace ADProject.Controllers
 
             // 写入会话
             HttpContext.Session.SetString("Username", user.Name);
+            HttpContext.Session.SetString("UserType", user.Role);
 
             return Ok(new
             {

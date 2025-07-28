@@ -22,7 +22,7 @@ namespace ADProject.Services
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Activity> Activities { get; set; }
         public DbSet<ActivityRegistrationRequest> ActivityRegistrationRequests { get; set; }
-        public DbSet<ActivityRequest> ActivityReviewLogs { get; set; }
+        public DbSet<ActivityRequest> ActivityRequest { get; set; }
         public DbSet<Channel> Channels { get; set; }
         public DbSet<ChannelReport> ChannelReports { get; set; }
         public DbSet<SystemMessage> SystemMessages { get; set; }

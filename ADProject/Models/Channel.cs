@@ -9,6 +9,8 @@ namespace ADProject.Models
         public string Name { get; set; }
 
         public int CreatedBy { get; set; }
+
+        public string status { get; set; }  // active / archived / deleted
         public virtual User Creator { get; set; }
 
         public virtual List<User> Members { get; set; } = new();
