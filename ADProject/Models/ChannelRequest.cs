@@ -2,7 +2,7 @@
 
 namespace ADProject.Models
 {
-    public class ChannelrEQUEST
+    public class ChannelRequest
     {
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -31,6 +31,7 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TagRepository>();
 builder.Services.AddScoped<UserProfileRepository>();
 builder.Services.AddScoped<ActivityRepository>();
+builder.Services.AddScoped<ChannelRepository>();
 
 var app = builder.Build();
 

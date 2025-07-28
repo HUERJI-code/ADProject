@@ -18,7 +18,7 @@ namespace ADProject.Models
         public virtual List<Channel> Channels { get; set; } = new();
         public virtual List<SystemMessage> ReceivedMessages { get; set; } = new();
 
-        public virtual UserProfile? Profile { get; set; } 
+        public virtual UserProfile? Profile { get; set; }
     }
 
 

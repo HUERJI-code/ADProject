@@ -121,6 +121,66 @@ namespace ADProject.Repositories
             _context.SaveChanges();
         }
 
+        public void RegisterForActivity(string username, int activityId)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+
+            var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
+            if (activity == null)
+                throw new Exception("活动不存在");
+
+            var existingRequest = _context.ActivityRegistrationRequests
+                .FirstOrDefault(r => r.UserId == user.UserId && r.ActivityId == activityId);
+            if (existingRequest != null)
+                throw new Exception("已提交过申请或已注册该活动");
+
+            var request = new ActivityRegistrationRequest
+            {
+                UserId = user.UserId,
+                User = user,
+                ActivityId = activityId,
+                Activity = activity,
+                Status = "pending",
+                RequestedAt = DateTime.UtcNow
+            };
+
+            _context.ActivityRegistrationRequests.Add(request);
+            _context.SaveChanges();
+        }
+
+        public void ReviewRegistrationRequest(int requestId, string decisionStatus)
+        {
+            var request = _context.ActivityRegistrationRequests
+                .Include(r => r.User)
+                .Include(r => r.Activity)
+                .FirstOrDefault(r => r.Id == requestId);
+
+            if (request == null)
+                throw new Exception("申请记录不存在");
+
+            if (decisionStatus != "approved" && decisionStatus != "rejected")
+                throw new Exception("审核状态无效");
+
+            request.Status = decisionStatus;
+            request.ReviewedAt = DateTime.UtcNow;
+
+            if (decisionStatus == "approved")
+            {
+                var activity = request.Activity;
+
+                // 避免重复添加
+                if (!activity.RegisteredUsers.Any(u => u.UserId == request.UserId))
+                {
+                    activity.RegisteredUsers.Add(request.User);
+                }
+            }
+
+            _context.SaveChanges();
+        }
+
+
 
     }
 }

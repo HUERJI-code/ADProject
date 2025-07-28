@@ -28,8 +28,10 @@ namespace ADProject.Services
         public DbSet<SystemMessage> SystemMessages { get; set; }
         public DbSet<ChannelMessage> ChannelMessages { get; set; }
 
+        public DbSet<ChannelRequest> channelRequest { get; set; }
+
         //public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-        
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

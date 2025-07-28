@@ -13,6 +13,8 @@ namespace ADProject.Models
         public string status { get; set; }  // active / archived / deleted
         public virtual User Creator { get; set; }
 
+        public string description { get; set; } = string.Empty; // 频道描述
+
         public virtual List<User> Members { get; set; } = new();
         public virtual List<ChannelMessage> Messages { get; set; } = new();  // 👈 新增
     }

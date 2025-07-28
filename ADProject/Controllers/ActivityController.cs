@@ -66,6 +66,12 @@ namespace ADProject.Controllers
         [HttpPut("approve/{requestId}")]
         public IActionResult ApproveRequest(int requestId, [FromQuery] string status)
         {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            if (userType != "admin")
+                return BadRequest("只有admin可以审批活动申请");
             try
             {
                 _repository.ApproveActivityRequest(requestId, status);
@@ -74,6 +80,45 @@ namespace ADProject.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("register")]
+        public IActionResult RegisterForActivity([FromBody] int activityId)
+        {
+            
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+
+            try
+            {
+                _repository.RegisterForActivity(username, activityId);
+                return Ok("申请已提交");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("review/{requestId}")]
+        public IActionResult ReviewActivityRegistration(int requestId, [FromBody] string status)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            if (userType != "organizer")
+                return BadRequest("只有组织者可以审批用户注册申请");
+            try
+            {
+                _repository.ReviewRegistrationRequest(requestId, status);
+                return Ok("审核已完成");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
