@@ -112,6 +112,26 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpPut("channels/reports/review")]
+        public IActionResult ReviewReport(int id, string status)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            if (userType != "admin")
+                return BadRequest("只有admin可以审核");
+            try
+            {
+                _repository.ReviewChannelReport(id, status);
+                return Ok($"举报已更新为状态：{status}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
 
     }
 }

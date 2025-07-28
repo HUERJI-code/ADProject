@@ -178,6 +178,21 @@ namespace ADProject.Repositories
             _context.SaveChanges();
         }
 
+        public void ReviewChannelReport(int reportId, string newStatus)
+        {
+            var report = _context.ChannelReports.FirstOrDefault(r => r.Id == reportId);
+            if (report == null)
+                throw new Exception("举报记录不存在");
+
+            if (string.IsNullOrWhiteSpace(newStatus))
+                throw new Exception("审批状态不能为空");
+
+            report.Status = newStatus; // 例如："resolved", "rejected"
+            report.ReviewedAt = DateTime.UtcNow;
+
+            _context.SaveChanges();
+        }
+
 
     }
 }
