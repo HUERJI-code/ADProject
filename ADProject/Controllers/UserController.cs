@@ -1,6 +1,7 @@
 ﻿using ADProject.Models;
 using ADProject.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 namespace ADProject.Controllers
 {
@@ -16,47 +17,57 @@ namespace ADProject.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetAll()
+        public ActionResult<IEnumerable<User>> GetAll()
         {
-            var users = await _repository.GetAllAsync();
+            var users = _repository.GetAll();
             return Ok(users);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> Get(int id)
+        public ActionResult<User> Get(int id)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = _repository.GetById(id);
             return user is null ? NotFound() : Ok(user);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(User user)
+        public IActionResult Create(User user)
         {
+            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
+            if (!emailRegex.IsMatch(user.Email))
+            {
+                return BadRequest("邮箱格式不正确！");
+            }
+
+            if (_repository.ExistsByEmail(user.Email))
+                return BadRequest("邮箱已存在！");
+            if (_repository.ExistsByName(user.Name))
+                return BadRequest("用户名已存在！");
             User newUser = new User
             {
                 Name = user.Name,
                 Email = user.Email,
                 PasswordHash = user.PasswordHash,
-                Role = "user", // Default role
+                Role = "user"
             };
-            await _repository.AddAsync(newUser);
-            return CreatedAtAction(nameof(Get), new { id = user.UserId }, newUser);
+            _repository.Add(newUser);
+            return CreatedAtAction(nameof(Get), new { id = newUser.UserId }, newUser);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, User user)
+        public IActionResult Update(int id, User user)
         {
             if (id != user.UserId) return BadRequest();
-            await _repository.UpdateAsync(user);
+            _repository.Update(user);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public IActionResult Delete(int id)
         {
-            await _repository.DeleteAsync(id);
+            _repository.Delete(id);
             return NoContent();
         }
     }
-
 }

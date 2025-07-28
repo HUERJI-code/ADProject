@@ -2,7 +2,6 @@
 using ADProject.Services;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace ADProject.Repositories
 {
     public class UserRepository
@@ -14,44 +13,54 @@ namespace ADProject.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public IEnumerable<User> GetAll()
         {
-            return await _context.Users
+            return _context.Users
                 .Include(u => u.Profile)
                 .Include(u => u.RegisteredActivities)
                 .Include(u => u.Channels)
                 .Include(u => u.ReceivedMessages)
-                .ToListAsync();
+                .ToList();
         }
 
-        public async Task<User?> GetByIdAsync(int id)
+        public User? GetById(int id)
         {
-            return await _context.Users
+            return _context.Users
                 .Include(u => u.Profile)
                 .Include(u => u.RegisteredActivities)
                 .Include(u => u.Channels)
                 .Include(u => u.ReceivedMessages)
-                .FirstOrDefaultAsync(u => u.UserId == id);
+                .FirstOrDefault(u => u.UserId == id);
         }
 
-        public async Task AddAsync(User user)
+        public void Add(User user)
         {
             _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async Task UpdateAsync(User user)
+        public void Update(User user)
         {
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = _context.Users.Find(id);
             if (user is null) return;
             _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
+        }
+
+        public bool ExistsByEmail(string email)
+        {
+            return _context.Users.Any(u => u.Email == email);
+        }
+
+        public bool ExistsByName(string name)
+        {
+            return _context.Users.Any(u => u.Name == name);
         }
     }
 }

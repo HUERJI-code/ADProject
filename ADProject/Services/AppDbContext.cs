@@ -39,10 +39,26 @@ namespace ADProject.Services
                 .WithOne(p => p.User)
                 .HasForeignKey<UserProfile>(p => p.UserId);
 
-            // 🔗 Profile ↔ Tags（一对多）
-            modelBuilder.Entity<Tag>()
-                .HasOne<UserProfile>()
-                .WithMany(up => up.Tags);
+            // 🔗 Profile ↔ Tags（多对多）
+            modelBuilder.Entity<UserProfile>()
+                .HasMany(up => up.Tags)
+                .WithMany() // ❗️不指定 Tag 的导航属性
+                .UsingEntity<Dictionary<string, object>>(
+                    "UserProfileTag",
+                    j => j.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
+                    j => j.HasOne<UserProfile>().WithMany().HasForeignKey("UserProfileId")
+                );
+
+            modelBuilder.Entity<Activity>()
+                .HasMany(a => a.Tags)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "ActivityTag",
+                    j => j.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
+                    j => j.HasOne<Activity>().WithMany().HasForeignKey("ActivityId")
+                );
+
+
 
             // 🔗 Activity ↔ Creator
             modelBuilder.Entity<Activity>()
