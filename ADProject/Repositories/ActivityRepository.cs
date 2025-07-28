@@ -1,5 +1,6 @@
 ﻿using ADProject.Models;
 using ADProject.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace ADProject.Repositories
 {
@@ -97,6 +98,29 @@ namespace ADProject.Repositories
 
             _context.SaveChanges();
         }
+
+        public void ApproveActivityRequest(int requestId, string newStatus)
+        {
+            var request = _context.ActivityRequest
+                .Include(r => r.Activity)
+                .FirstOrDefault(r => r.Id == requestId);
+
+            if (request == null)
+                throw new Exception("活动申请记录不存在");
+
+            // 更新申请状态
+            request.Status = newStatus;
+            request.ReviewedAt = DateTime.UtcNow;
+
+            // 如果是审批通过或拒绝，则更新对应活动状态
+            if (newStatus == "approved" || newStatus == "rejected")
+            {
+                request.Activity.Status = newStatus;
+            }
+
+            _context.SaveChanges();
+        }
+
 
     }
 }

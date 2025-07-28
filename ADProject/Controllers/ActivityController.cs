@@ -63,5 +63,20 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpPut("approve/{requestId}")]
+        public IActionResult ApproveRequest(int requestId, [FromQuery] string status)
+        {
+            try
+            {
+                _repository.ApproveActivityRequest(requestId, status);
+                return Ok(new { message = $"申请已更新为 {status}" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+
     }
 }
