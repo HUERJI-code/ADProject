@@ -17,5 +17,7 @@ namespace ADProject.Models
 
         public virtual List<User> Members { get; set; } = new();
         public virtual List<ChannelMessage> Messages { get; set; } = new();  // 👈 新增
+
+        public virtual List<Tag> Tags { get; set; } = new();  // 频道标签
     }
 }

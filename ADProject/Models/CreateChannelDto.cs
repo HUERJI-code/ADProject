@@ -7,5 +7,7 @@
         {
             get; set;
         }
+
+        public List<int> TagIds { get; set; }
     }
 }

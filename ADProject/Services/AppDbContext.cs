@@ -51,6 +51,15 @@ namespace ADProject.Services
                     j => j.HasOne<UserProfile>().WithMany().HasForeignKey("UserProfileId")
                 );
 
+            modelBuilder.Entity<Channel>()
+                .HasMany(a => a.Tags)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "ChannelTag",
+                    j => j.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
+                    j => j.HasOne<Channel>().WithMany().HasForeignKey("ChannelId")
+                );
+
             modelBuilder.Entity<Activity>()
                 .HasMany(a => a.Tags)
                 .WithMany()
