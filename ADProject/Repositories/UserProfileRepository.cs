@@ -44,7 +44,8 @@ namespace ADProject.Repositories
                     Weight = dto.Weight,
                     Gender = dto.Gender,
                     Tags = tagEntities,
-                    UserId = user.UserId
+                    UserId = user.UserId,
+                    User = user // 关联用户
                 };
 
                 _context.UserProfiles.Add(newProfile);

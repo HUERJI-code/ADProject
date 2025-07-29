@@ -67,7 +67,7 @@ namespace ADProject.Controllers
             var channelId = dto.ChannelId;
             try
             {
-                _repository.CreateChannelMessage(channelId, dto,username);
+                _repository.CreateChannelMessage(channelId, dto, username);
                 return Ok("消息已成功发布！");
             }
             catch (Exception ex)
@@ -132,6 +132,43 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpGet("channels/getAll")]
+        public IActionResult GetAllChannels()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            try
+            {
+                var channels = _repository.GetAllChannels();
+                return Ok(channels);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
 
+        }
+
+        [HttpGet("/channel/getChannelById")]
+        public IActionResult GetChannelById(int channelId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            try
+            {
+                var channel = _repository.GetChannelById(channelId);
+                if (channel == null)
+                    return NotFound("频道不存在");
+                return Ok(channel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+
+        }
     }
 }
+
