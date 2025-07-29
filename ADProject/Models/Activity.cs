@@ -18,6 +18,9 @@ namespace ADProject.Models
 
         public virtual List<Tag> Tags { get; set; } = new();
         public virtual List<User> RegisteredUsers { get; set; } = new();
+
+        public virtual List<User> FavouritedByUsers { get; set; } = new();
+
     }
 
 

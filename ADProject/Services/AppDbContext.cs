@@ -69,6 +69,27 @@ namespace ADProject.Services
                     j => j.HasOne<Activity>().WithMany().HasForeignKey("ActivityId")
                 );
 
+            modelBuilder.Entity<Activity>()
+                .HasMany(a => a.RegisteredUsers)
+                .WithMany(u => u.RegisteredActivities) // 👈 这里指定反向属性
+                .UsingEntity<Dictionary<string, object>>(
+                    "ActivityUser",
+                    j => j.HasOne<User>().WithMany().HasForeignKey("UserId"),
+                    j => j.HasOne<Activity>().WithMany().HasForeignKey("ActivityId")
+                );
+
+
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.favouriteActivities)
+                .WithMany(a => a.FavouritedByUsers) // 这里绑定双向导航
+                .UsingEntity<Dictionary<string, object>>(
+                    "UserFavouriteActivity",
+                    j => j.HasOne<Activity>().WithMany().HasForeignKey("ActivityId"),
+                    j => j.HasOne<User>().WithMany().HasForeignKey("UserId")
+                );
+
+
 
 
             // 🔗 Activity ↔ Creator

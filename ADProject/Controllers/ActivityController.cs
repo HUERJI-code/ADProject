@@ -136,6 +136,77 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpPost("activities/favourite/{activityId}")]
+        public IActionResult AddToFavourites(int activityId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录");
+
+            try
+            {
+                _repository.AddToFavourites(username, activityId);
+                return Ok("已成功收藏该活动");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpDelete("activities/favourite/{activityId}")]
+        public IActionResult RemoveFromFavourites(int activityId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录");
+
+            try
+            {
+                _repository.RemoveFromFavourites(username, activityId);
+                return Ok("已取消收藏");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("favorites")]
+        public ActionResult<List<Activity>> GetFavorites()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "未登录用户" });
+
+            try
+            {
+                var activities = _repository.GetFavouriteActivitiesByUsername(username);
+                return Ok(activities);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("registered")]
+        public ActionResult<List<Activity>> GetRegistered()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "未登录用户" });
+
+            try
+            {
+                var activities = _repository.GetRegisteredActivitiesByUsername(username);
+                return Ok(activities);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
 
     }
 }

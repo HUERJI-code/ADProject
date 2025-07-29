@@ -202,5 +202,67 @@ namespace ADProject.Repositories
         }
 
 
+        public void AddToFavourites(string username, int activityId)
+        {
+            var user = _context.Users
+                .Include(u => u.favouriteActivities)
+                .FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+
+            var activity = _context.Activities.Find(activityId);
+            if (activity == null)
+                throw new Exception("活动不存在");
+
+            if (user.favouriteActivities.Any(a => a.ActivityId == activityId))
+                throw new Exception("活动已在收藏列表");
+
+            user.favouriteActivities.Add(activity);
+            _context.SaveChanges();
+        }
+
+        public void RemoveFromFavourites(string username, int activityId)
+        {
+            var user = _context.Users
+                .Include(u => u.favouriteActivities)
+                .FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+
+            var activity = user.favouriteActivities
+                .FirstOrDefault(a => a.ActivityId == activityId);
+            if (activity == null)
+                throw new Exception("该活动不在收藏列表");
+
+            user.favouriteActivities.Remove(activity);
+            _context.SaveChanges();
+        }
+
+        public List<Activity> GetFavouriteActivitiesByUsername(string username)
+        {
+            var user = _context.Users
+                .Include(u => u.favouriteActivities)
+                .FirstOrDefault(u => u.Name == username);
+
+            if (user == null)
+                throw new Exception("用户不存在");
+
+            return user.favouriteActivities;
+        }
+
+        public List<Activity> GetRegisteredActivitiesByUsername(string username)
+        {
+            var user = _context.Users
+                .Include(u => u.RegisteredActivities)
+                .FirstOrDefault(u => u.Name == username);
+
+            if (user == null)
+                throw new Exception("用户不存在");
+
+            return user.RegisteredActivities;
+        }
+
+
+
     }
 }
