@@ -180,6 +180,26 @@ namespace ADProject.Repositories
             _context.SaveChanges();
         }
 
+        public List<Activity> SearchActivitiesByKeyword(string keyword)
+        {
+            var titleMatches = _context.Activities
+                .Include(a => a.Tags)
+                .Where(a => a.Title.Contains(keyword))
+                .ToList();
+
+            var tagMatches = _context.Activities
+                .Include(a => a.Tags)
+                .Where(a => a.Tags.Any(t => t.Name.Contains(keyword)))
+                .ToList();
+
+            // 合并并去重
+            var allMatches = titleMatches
+                .Concat(tagMatches)
+                .Distinct()
+                .ToList();
+
+            return allMatches;
+        }
 
 
     }

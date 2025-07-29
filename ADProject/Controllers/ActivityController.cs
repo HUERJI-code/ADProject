@@ -122,6 +122,20 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpGet("activities/search")]
+        public IActionResult SearchActivities([FromQuery] string keyword)
+        {
+            try
+            {
+                var results = _repository.SearchActivitiesByKeyword(keyword);
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
 
     }
 }
