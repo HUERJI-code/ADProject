@@ -10,6 +10,8 @@ namespace ADProject.Models
 
         public int CreatedBy { get; set; }
 
+        public string? Url { get; set; } = string.Empty; // 频道照片链接
+
         public string status { get; set; }  // active / archived / deleted
         public virtual User Creator { get; set; }
 

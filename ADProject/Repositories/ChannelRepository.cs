@@ -34,6 +34,7 @@ namespace ADProject.Repositories
                 CreatedBy = user.UserId,
                 Creator = user,
                 status = "pending", // 初始状态为 pending
+                Url = dto.Url ?? string.Empty, // 如果没有链接则默认为空
                 description = dto.Description ?? string.Empty, // 如果没有描述则默认为空
                 Members = new List<User> { user }, // 默认加入创建者
                 Tags = tagEntities, // 关联标签

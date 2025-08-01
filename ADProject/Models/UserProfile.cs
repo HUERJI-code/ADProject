@@ -13,10 +13,10 @@ namespace ADProject.Models
             public virtual List<Tag> Tags { get; set; } = new();
 
             public int? Age { get; set; }
-            public double? Height { get; set; }  // 单位：cm
-            public double? Weight { get; set; }  // 单位：kg
 
-            public string? Gender { get; set; }  // 可选：male / female / other
+            public string? url { get; set; }  // 可选：用户头像或个人网站链接
+
+        public string? Gender { get; set; }  // 可选：male / female / other
         }
 
 }

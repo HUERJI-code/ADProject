@@ -40,6 +40,7 @@ namespace ADProject.Repositories
                 EndTime = dto.EndTime,
                 CreatedBy = user.UserId,
                 Creator = user,
+                Url = dto.Url ?? string.Empty, // 如果没有链接则默认为空
                 Tags = tagEntities
             };
 
@@ -50,10 +51,9 @@ namespace ADProject.Repositories
             var registration = new ActivityRequest
             {
                 ActivityId = activity.ActivityId,
-                ReviewedById = 2,
+                ReviewedById = 1,
                 Status = "pending",
                 RequestedAt = DateTime.UtcNow,
-                ReviewedAt = DateTime.UtcNow,
                 requestType = "createActivity",
                 ReviewedBy = admin,
             };
@@ -86,6 +86,18 @@ namespace ADProject.Repositories
             activity.Location = dto.Location;
             activity.StartTime = dto.StartTime;
             activity.EndTime = dto.EndTime;
+            activity.Url = dto.Url ?? string.Empty; // 如果没有链接则默认为空
+            activity.Status = "pending"; // 保持原有状态，除非提供了新的状态
+
+            var update = new ActivityRequest
+            {
+                ActivityId = activity.ActivityId,
+                ReviewedById = 1, // 假设管理员ID为2
+                Status = "pending",
+                RequestedAt = DateTime.UtcNow,
+                requestType = "updateActivity",
+                ReviewedBy = _context.Users.FirstOrDefault(u => u.UserId == 1)
+            };
 
             if (dto.TagIds != null)
             {

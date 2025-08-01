@@ -40,8 +40,6 @@ namespace ADProject.Repositories
                 var newProfile = new UserProfile
                 {
                     Age = dto.Age,
-                    Height = dto.Height,
-                    Weight = dto.Weight,
                     Gender = dto.Gender,
                     Tags = tagEntities,
                     UserId = user.UserId,
@@ -56,8 +54,7 @@ namespace ADProject.Repositories
 
                 var existingProfile = user.Profile;
                 existingProfile.Age = dto.Age;
-                existingProfile.Height = dto.Height;
-                existingProfile.Weight = dto.Weight;
+                if(dto.Url != null) existingProfile.url = dto.Url;
                 existingProfile.Gender = dto.Gender;
                 Console.WriteLine($"更新用户 {username} 的个人资料");
                 existingProfile.Tags.Clear(); // 清除原有绑定

@@ -12,6 +12,7 @@ namespace ADProject.Models
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string Status { get; set; } = "pending";  // pending / approved / rejected / cancelled
+        public string? Url { get; set; } = string.Empty; // 活动照片链接
 
         public int CreatedBy { get; set; }
         public virtual User Creator { get; set; }
