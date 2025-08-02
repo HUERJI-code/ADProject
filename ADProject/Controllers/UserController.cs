@@ -1,5 +1,6 @@
 ﻿using ADProject.Models;
 using ADProject.Repositories;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 
@@ -82,13 +83,11 @@ namespace ADProject.Controllers
             return CreatedAtAction(nameof(Get), new { id = newUser.UserId }, newUser);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, User user)
+        [HttpPut("/updateUserPass")]
+        public IActionResult Update([FromBody] UserUpdateDto userUpdateDto)
         {
-            if (id != user.UserId) return BadRequest();
-            user.Role = "user"; // Ensure role is set to 'user' on update
-            _repository.Update(user);
-            return NoContent();
+            var message = _repository.Update(userUpdateDto);
+            return Ok(message);
         }
 
         [HttpDelete("{id}")]
