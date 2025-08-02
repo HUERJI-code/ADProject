@@ -40,6 +40,7 @@ namespace ADProject.Repositories
                 EndTime = dto.EndTime,
                 CreatedBy = user.UserId,
                 Creator = user,
+                number = dto.number,
                 Url = dto.Url ?? string.Empty, // 如果没有链接则默认为空
                 Tags = tagEntities
             };
@@ -86,6 +87,7 @@ namespace ADProject.Repositories
             activity.Location = dto.Location;
             activity.StartTime = dto.StartTime;
             activity.EndTime = dto.EndTime;
+            activity.number = dto.number;
             activity.Url = dto.Url ?? string.Empty; // 如果没有链接则默认为空
             activity.Status = "pending"; // 保持原有状态，除非提供了新的状态
 
