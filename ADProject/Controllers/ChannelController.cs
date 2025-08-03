@@ -169,6 +169,57 @@ namespace ADProject.Controllers
             }
 
         }
+
+        [HttpGet("channels/getChannelMessages")]
+        public IActionResult GetChannelMessages(int channelId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            try
+            {
+                var messages = _repository.GetChannelMessages(channelId);
+                return Ok(messages);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("channels/getChannelMembers")]
+        public IActionResult GetChannelMembers(int channelId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            try
+            {
+                var members = _repository.GetChannelMembers(channelId);
+                return Ok(members);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("channels/getUserJoinedChannel")]
+        public IActionResult GetUserJoinedChannels()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            try
+            {
+                var channels = _repository.GetUserJoinedChannels(username);
+                return Ok(channels);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }
 

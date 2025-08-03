@@ -47,7 +47,7 @@ namespace ADProject.Repositories
             {
                 ChannelId = channel.ChannelId,
                 Status = "pending",
-                channel = channel, 
+                channel = channel,
                 OrganizerId = user.UserId,
                 User = user,
                 RequestedAt = DateTime.UtcNow,
@@ -80,7 +80,7 @@ namespace ADProject.Repositories
             request.Status = status;
             request.ReviewedAt = DateTime.UtcNow;
 
-            if (status == "approved"|| status == "rejected" || status == "banned")
+            if (status == "approved" || status == "rejected" || status == "banned")
             {
                 request.channel.status = status; // 更新频道状态为 approved
             }
@@ -88,7 +88,7 @@ namespace ADProject.Repositories
             _context.SaveChanges();
         }
 
-        public void CreateChannelMessage(int channelId, PostChannelMessageDto dto,string username)
+        public void CreateChannelMessage(int channelId, PostChannelMessageDto dto, string username)
         {
             var user = _context.Users.FirstOrDefault(u => u.Name == username);
             if (user == null || user.Role != "organizer")
@@ -194,6 +194,42 @@ namespace ADProject.Repositories
             _context.SaveChanges();
         }
 
+        public List<ChannelMessage> GetChannelMessages(int channelId)
+        {
+            var channel = _context.Channels
+                .Include(c => c.Messages)
+                .ThenInclude(m => m.PostedBy) // 包含发布者信息
+                .FirstOrDefault(c => c.ChannelId == channelId);
+            if (channel == null)
+                throw new Exception("频道不存在");
+            return channel.Messages
+                .Where(m => m.IsVisible) // 只返回可见的消息
+                .OrderByDescending(m => m.PostedAt) // 按时间降序排列
+                .ToList();
+        }
 
+        public List<User> GetChannelMembers(int channelId)
+        {
+            var channel = _context.Channels
+                .Include(c => c.Members)
+                .FirstOrDefault(c => c.ChannelId == channelId);
+            if (channel == null)
+                throw new Exception("频道不存在");
+            return channel.Members.ToList();
+
+        }
+
+        public List<Channel> GetUserJoinedChannels(string username)
+        {
+            var user = _context.Users
+                .Include(u => u.Channels)
+                .ThenInclude(c => c.Creator) // 包含频道创建者信息
+                .FirstOrDefault(u => u.Name == username); // 替换为实际用户名
+            if (user == null)
+                throw new Exception("用户不存在");
+            return user.Channels
+                .Where(c => c.status == "approved" || c.status == "active") // 只返回已批准或激活的频道
+                .ToList();
+        }
     }
 }
