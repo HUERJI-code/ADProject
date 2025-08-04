@@ -15,7 +15,17 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000") // 允许的前端源地址
+                .AllowCredentials() // 允许携带凭据
+                .AllowAnyMethod() // 允许所有 HTTP 方法
+                .AllowAnyHeader();
+    });
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -32,6 +42,7 @@ builder.Services.AddScoped<TagRepository>();
 builder.Services.AddScoped<UserProfileRepository>();
 builder.Services.AddScoped<ActivityRepository>();
 builder.Services.AddScoped<ChannelRepository>();
+builder.Services.AddScoped<SystemMessageRepository>();
 
 var app = builder.Build();
 
@@ -43,6 +54,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowAll");
+
 
 app.UseHttpsRedirection();
 
