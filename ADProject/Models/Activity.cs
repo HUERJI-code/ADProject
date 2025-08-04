@@ -9,8 +9,8 @@ namespace ADProject.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public string Location { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public String StartTime { get; set; }
+        public String EndTime { get; set; }
         public string Status { get; set; } = "pending";  // pending / approved / rejected / cancelled
         public string? Url { get; set; } = string.Empty; // 活动照片链接
 

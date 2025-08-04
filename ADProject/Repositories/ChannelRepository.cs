@@ -1,16 +1,19 @@
 ﻿using ADProject.Models;
 using ADProject.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace ADProject.Repositories
 {
     public class ChannelRepository
     {
         private readonly AppDbContext _context;
+        private readonly SystemMessageRepository _systemMessageRepository;
 
-        public ChannelRepository(AppDbContext context)
+        public ChannelRepository(AppDbContext context, SystemMessageRepository systemMessageRepository)
         {
             _context = context;
+            _systemMessageRepository = systemMessageRepository;
         }
 
         public void CreateChannel(string username, CreateChannelDto dto)
@@ -52,6 +55,13 @@ namespace ADProject.Repositories
                 User = user,
                 RequestedAt = DateTime.UtcNow,
             };
+            var CreateSystemMessageDto = new CreateSystemMessageDto
+            {
+                Title = "新channel申请",
+                Content = $"{user.Name} 创建了新cahnnel：{channel.Name} 描述为： {channel.description}",
+                ReceiverId = 1, // 假设 1 是管理员的 UserId
+            };
+            _systemMessageRepository.Create(CreateSystemMessageDto);
 
             _context.channelRequest.Add(request); // 如果你有单独的 ChannelRequest 表可以替换这里
             try
@@ -174,6 +184,14 @@ namespace ADProject.Repositories
                 ReportedAt = DateTime.UtcNow,
                 ReviewedAt = null // 初始时未审核
             };
+
+            var CreateSystemMessageDto = new CreateSystemMessageDto
+            {
+                Title = "新channel举报",
+                Content = $"{user.Name} 举报了cahnnel：{channel.Name} 原因为： {content}",
+                ReceiverId = 1, // 假设 1 是管理员的 UserId
+            };
+            _systemMessageRepository.Create(CreateSystemMessageDto);
 
             _context.ChannelReports.Add(report);
             _context.SaveChanges();

@@ -31,6 +31,7 @@ namespace ADProject.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Error creating activity: " + ex.Message);
                 return BadRequest(new { error = ex.Message });
             }
         }

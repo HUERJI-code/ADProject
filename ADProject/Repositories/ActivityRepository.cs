@@ -7,10 +7,12 @@ namespace ADProject.Repositories
     public class ActivityRepository
     {
         private readonly AppDbContext _context;
+        private readonly SystemMessageRepository _systemMessageRepository;
 
-        public ActivityRepository(AppDbContext context)
+        public ActivityRepository(AppDbContext context,SystemMessageRepository systemMessageRepository)
         {
             _context = context;
+            _systemMessageRepository = systemMessageRepository;
         }
 
         public void CreateActivityWithRegistration(string username, CreateActivityDto dto)
@@ -58,6 +60,14 @@ namespace ADProject.Repositories
                 requestType = "createActivity",
                 ReviewedBy = admin,
             };
+
+            var CreateSystemMessageDto = new CreateSystemMessageDto
+            {
+                Title = "新活动申请",
+                Content = $"{user.Name} 创建了新活动：{activity.Title} 描述为： {activity.Description}",
+                ReceiverId = 1 // 假设管理员ID为2
+            };
+            _systemMessageRepository.Create(CreateSystemMessageDto);
 
             _context.ActivityRequest.Add(registration);
             try
@@ -109,6 +119,14 @@ namespace ADProject.Repositories
                 activity.Tags.Clear(); // 清除原有绑定
                 activity.Tags = tagEntities;
             }
+
+            var CreateSystemMessageDto = new CreateSystemMessageDto
+            {
+                Title = "活动信息修改",
+                Content = $"{activity.Creator.Name} 创建了新活动：{activity.Title} 描述为： {activity.Description}",
+                ReceiverId = 1 // 假设管理员ID为2
+            };
+            _systemMessageRepository.Create(CreateSystemMessageDto);
 
             _context.SaveChanges();
         }
@@ -162,6 +180,14 @@ namespace ADProject.Repositories
 
             _context.ActivityRegistrationRequests.Add(request);
             _context.SaveChanges();
+
+            var CreateSystemMessageDto = new CreateSystemMessageDto
+            {
+                Title = "新用户申请活动",
+                Content = $"{username} 申请注册活动：{activity.Title}",
+                ReceiverId = activity.Creator.UserId // 假设管理员ID为2
+            };
+            _systemMessageRepository.Create(CreateSystemMessageDto);
         }
 
         public void ReviewRegistrationRequest(int requestId, string decisionStatus)
