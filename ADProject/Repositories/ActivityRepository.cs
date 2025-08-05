@@ -9,7 +9,7 @@ namespace ADProject.Repositories
         private readonly AppDbContext _context;
         private readonly SystemMessageRepository _systemMessageRepository;
 
-        public ActivityRepository(AppDbContext context,SystemMessageRepository systemMessageRepository)
+        public ActivityRepository(AppDbContext context, SystemMessageRepository systemMessageRepository)
         {
             _context = context;
             _systemMessageRepository = systemMessageRepository;
@@ -302,7 +302,37 @@ namespace ADProject.Repositories
             return user.RegisteredActivities;
         }
 
+        public List<Activity> GetLoginOrganizerActivities(string username)
+        {
+            var user = _context.Users
+                .Include(u => u.RegisteredActivities)
+                .Include(u => u.favouriteActivities)
+                .FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+            var activities = GetAll().Where(a => a.Creator.Name == username).ToList();
+            return activities.Distinct().ToList();
 
+        }
 
+        public List<ActivityRegistrationRequest> GetOrganizerRegistrationRequests(string username)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+            var activityIdList = GetLoginOrganizerActivities(username)
+                .Select(a => a.ActivityId)
+                .ToList();
+            var requests = _context.ActivityRegistrationRequests
+                .Include(r => r.User)
+                .Where(r => activityIdList.Contains(r.ActivityId) && r.Status == "pending")
+                .ToList();
+            if (requests == null || requests.Count == 0)
+                throw new Exception("没有待处理的注册申请");
+            return requests;
+
+        }
+
+        
     }
 }

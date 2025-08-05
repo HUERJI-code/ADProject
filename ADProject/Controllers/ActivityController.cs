@@ -87,7 +87,7 @@ namespace ADProject.Controllers
         [HttpPost("register")]
         public IActionResult RegisterForActivity([FromBody] int activityId)
         {
-            
+
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("未登录用户！");
@@ -209,5 +209,45 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpGet("/getLoginOrganizerActivities")]
+        public ActionResult<List<Activity>> GetLoginOrganizerActivities()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "未登录用户" });
+            if (userType != "organizer")
+                return BadRequest(new { message = "只有组织者可以查看自己的活动" });
+            try
+            {
+                var activities = _repository.GetLoginOrganizerActivities(username);
+                return Ok(activities);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+
+        }
+
+        [HttpGet("/getOrganizerActivityRegisterRequest")]
+        public ActionResult<List<Activity>> GetOrganizerActivityRegisterRequest()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "未登录用户" });
+            if (userType != "organizer")
+                return BadRequest(new { message = "只有组织者可以查看注册申请" });
+            try
+            {
+                var activities = _repository.GetOrganizerRegistrationRequests(username);
+                return Ok(activities);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
     }
 }
