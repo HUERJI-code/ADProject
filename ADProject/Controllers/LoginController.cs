@@ -62,5 +62,17 @@ namespace ADProject.Controllers
             return Ok(new { message = "已登录", username });
         }
 
+        [HttpGet("/checkLoginUserType")]
+        public IActionResult CheckLoginUserType()
+        {
+            // 检查 Session 中是否有用户类型
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(userType))
+            {
+                return Unauthorized("未登录！");
+            }
+            return Ok(new { message = "已登录", userType });
+
+        }
     }
 }

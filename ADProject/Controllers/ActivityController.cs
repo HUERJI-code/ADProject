@@ -249,5 +249,22 @@ namespace ADProject.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+
+        [HttpGet("/checkActivityNumber")]
+        public ActionResult<int> CheckActivityNumber(int activityId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "未登录用户" });
+            try
+            {
+                int count = _repository.GetActivityCountByActivityId(activityId);
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
     }
 }

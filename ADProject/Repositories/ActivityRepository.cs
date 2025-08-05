@@ -333,6 +333,14 @@ namespace ADProject.Repositories
 
         }
 
-        
+        public int GetActivityCountByActivityId(int activityId)
+        {
+            var activity = _context.Activities
+                .Include(a => a.RegisteredUsers)
+                .FirstOrDefault(a => a.ActivityId == activityId);
+            if (activity == null)
+                throw new Exception("活动不存在");
+            return activity.RegisteredUsers.Count;
+        }
     }
 }
