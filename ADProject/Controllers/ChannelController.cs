@@ -220,6 +220,40 @@ namespace ADProject.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpGet("/getOrganizerOwnedChannel")]
+        public IActionResult GetOrganizerOwnedChannels()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            try
+            {
+                var channels = _repository.GetOrganizerOwnedChannel(username);
+                return Ok(channels);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("/updateChannel")]
+        public IActionResult UpdateChannel([FromBody] UpdateChannelDto dto)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            try
+            {
+                _repository.UpdateChannel(dto, username);
+                return Ok("频道信息已更新");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }
 

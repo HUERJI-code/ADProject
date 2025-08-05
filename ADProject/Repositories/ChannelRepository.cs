@@ -75,6 +75,64 @@ namespace ADProject.Repositories
             }
         }
 
+        public void UpdateChannel(UpdateChannelDto dto, string username)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+            if (user.Role != "organizer")
+                throw new Exception("只有 organizer 可以更新频道");
+            var channel = _context.Channels
+                .Include(c => c.Tags) // 确保包含 Tags
+                .FirstOrDefault(c => c.ChannelId == dto.Id);
+            if (channel == null)
+                throw new Exception("频道不存在");
+            if (channel.CreatedBy != user.UserId)
+                throw new UnauthorizedAccessException("您没有权限更新此频道");
+            // 更新频道信息
+            channel.Name = dto.Name;
+            channel.description = dto.Description ?? string.Empty; // 如果没有描述则默认为空
+            channel.Url = dto.Url ?? string.Empty; // 如果没有链接则默认为空
+            // 更新标签
+            if (dto.TagIds != null && dto.TagIds.Any())
+            {
+                var tagEntities = _context.Tags
+                    .Where(t => dto.TagIds.Contains(t.TagId))
+                    .ToList();
+                channel.Tags.Clear(); // 清空现有标签
+                channel.Tags = tagEntities; // 更新标签列表
+            }
+            channel.status = "pending"; // 更新状态为 pending，等待管理员审核
+            // 创建频道更新请求
+            var request = new ChannelRequest
+            {
+                ChannelId = channel.ChannelId,
+                Status = "pending",
+                channel = channel,
+                OrganizerId = user.UserId,
+                User = user,
+                RequestedAt = DateTime.UtcNow,
+            };
+            var CreateSystemMessageDto = new CreateSystemMessageDto
+            {
+                Title = "频道更新申请",
+                Content = $"{user.Name} 更新了频道：{channel.Name} 描述为： {channel.description}",
+                ReceiverId = 1, // 假设 1 是管理员的 UserId
+            };
+            _systemMessageRepository.Create(CreateSystemMessageDto);
+            _context.channelRequest.Add(request); // 如果你有单独的 ChannelRequest 表可以替换这里
+            // 保存更改
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine("Save error: " + ex.InnerException?.Message);
+                throw;
+            }
+        }
+
         public void ReviewChannelRequest(int requestId, string status)
         {
             var request = _context.channelRequest
@@ -115,7 +173,7 @@ namespace ADProject.Repositories
                 ChannelId = channelId,
                 Title = dto.Title,
                 Content = dto.Content,
-                PostedAt = dto.PostedAt,
+                //PostedAt = dto.PostedAt,
                 IsPinned = dto.IsPinned,
                 IsVisible = dto.IsVisible,
                 PostedById = user.UserId, // 发布人ID
@@ -249,5 +307,18 @@ namespace ADProject.Repositories
                 .Where(c => c.status == "approved" || c.status == "active") // 只返回已批准或激活的频道
                 .ToList();
         }
+
+        public List<Channel> GetOrganizerOwnedChannel(string username)
+        {
+            var channel = _context.Channels
+                .Include(u => u.Creator)
+                .ToList();
+            var user = _context.Users.Where(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+            var ownedChannel = channel.Where(c => c.Creator.Name == username);
+            return ownedChannel.ToList();
+        }
+
     }
 }
