@@ -338,5 +338,13 @@ namespace ADProject.Repositories
             channel.status = "approved"; // 将频道状态设置为 approved
             _context.SaveChanges();
         }
+
+        public List<ChannelReport> GetAllChannelReports()
+        {
+            return _context.ChannelReports
+                .Include(r => r.ReportedBy) // 包含举报者信息
+                .Include(r => r.Channel) // 包含被举报的频道信息
+                .ToList();
+        }
     }
 }

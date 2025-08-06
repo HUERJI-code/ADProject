@@ -295,6 +295,26 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpGet("/getAllChannelReports")]
+        public IActionResult GetAllChannelReports()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            if (userType != "admin")
+                return BadRequest("只有admin可以查看频道举报");
+            try
+            {
+                var reports = _repository.GetAllChannelReports();
+                return Ok(reports);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
     }
 }
 

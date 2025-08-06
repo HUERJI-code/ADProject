@@ -360,5 +360,13 @@ namespace ADProject.Repositories
             activity.Status = "approved"; // 将活动状态设置为已批准
             _context.SaveChanges();
         }
+
+        public List<ActivityRequest> GetAllActivityRequests()
+        {
+            return _context.ActivityRequest
+                .Include(r => r.Activity)
+                .Include(r => r.ReviewedBy)
+                .ToList();
+        }
     }
 }
