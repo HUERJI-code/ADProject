@@ -346,5 +346,13 @@ namespace ADProject.Repositories
                 .Include(r => r.Channel) // 包含被举报的频道信息
                 .ToList();
         }
+
+        public List<ChannelRequest> GetAllChannelRequests()
+        {
+            return _context.channelRequest
+                .Include(r => r.User) // 包含申请者信息
+                .Include(r => r.channel) // 包含申请的频道信息
+                .ToList();
+        }
     }
 }

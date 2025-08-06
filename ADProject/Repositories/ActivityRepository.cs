@@ -111,6 +111,8 @@ namespace ADProject.Repositories
                 ReviewedBy = _context.Users.FirstOrDefault(u => u.UserId == 1)
             };
 
+            _context.ActivityRequest.Add(update);
+
             if (dto.TagIds != null)
             {
                 var tagEntities = _context.Tags
@@ -188,6 +190,23 @@ namespace ADProject.Repositories
                 ReceiverId = activity.Creator.UserId // 假设管理员ID为2
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
+        }
+
+        public string checkRegisterStatus(string username, int activityId)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                return ("用户不存在");
+
+            var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
+            if (activity == null)
+                return ("活动不存在");
+
+            var existingRequest = _context.ActivityRegistrationRequests
+                .FirstOrDefault(r => r.UserId == user.UserId && r.ActivityId == activityId);
+            if (existingRequest != null)
+                return ("已提交过申请或已注册该活动");
+            else return ("未注册过");
         }
 
         public void ReviewRegistrationRequest(int requestId, string decisionStatus)
@@ -368,5 +387,77 @@ namespace ADProject.Repositories
                 .Include(r => r.ReviewedBy)
                 .ToList();
         }
+
+        public List<ActivityRegistrationRequest> checkMyRegistrationRequests(string username)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+            var requests = _context.ActivityRegistrationRequests
+                .Include(r => r.Activity)
+                .Where(r => r.UserId == user.UserId)
+                .ToList();
+            if (requests == null || requests.Count == 0)
+                throw new Exception("没有注册申请");
+            return requests;
+        }
+
+        public void CancelRegistrationRequest(int activityId, string username)
+        {
+            var activity = _context.Activities
+                .Include(a => a.RegisteredUsers)
+                //.Include(a => a.ActivityRegistrationRequests)
+                .FirstOrDefault(a => a.ActivityId == activityId);
+            if (activity == null)
+                throw new Exception("活动不存在");
+
+            var user = _context.Users.FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+
+            // 1) 如果活动已报名用户中包含该用户，则移除
+            // --- 取决于 RegisteredUsers 的类型与元素结构 ---
+            // 情况A：RegisteredUsers 是 Users 集合
+            if (activity.RegisteredUsers != null &&
+                activity.RegisteredUsers.Any(u => u.UserId == user.UserId))
+            {
+                var regUser = activity.RegisteredUsers.First(u => u.UserId == user.UserId);
+                activity.RegisteredUsers.Remove(regUser);
+            }
+
+            // 情况B：RegisteredUsers 是报名关联表(例如 ActivityUser / Registration)集合
+            // if (activity.RegisteredUsers != null &&
+            //     activity.RegisteredUsers.Any(r => r.UserId == user.UserId))
+            // {
+            //     var reg = activity.RegisteredUsers.First(r => r.UserId == user.UserId);
+            //     activity.RegisteredUsers.Remove(reg);
+            //     // 如果需要物理删除关联实体（而不是仅从导航集合移除），可额外调用：
+            //     // _context.Remove(reg);
+            // }
+
+            // 2) 查找并删除该用户对该活动的注册申请
+            var request = _context.ActivityRegistrationRequests
+                .FirstOrDefault(r => r.UserId == user.UserId && r.ActivityId == activityId);
+            if (request != null)
+            {
+                _context.ActivityRegistrationRequests.Remove(request);
+            }
+
+            // 3) 保存更改
+            _context.SaveChanges();
+
+            // 4) （可选）发送系统消息，仅当确实删除了申请时再发
+            if (request != null)
+            {
+                var createSystemMessageDto = new CreateSystemMessageDto
+                {
+                    Title = "注册申请取消",
+                    Content = $"{user.Name} 已取消对活动 {activity.Title} 的注册申请。",
+                    ReceiverId = user.UserId
+                };
+                _systemMessageRepository.Create(createSystemMessageDto);
+            }
+        }
+
     }
 }

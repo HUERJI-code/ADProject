@@ -327,5 +327,56 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpGet("/checkRegisterStatus")]
+        public string checkRegisterStatus(int  activityId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return("未登录用户！");
+            try
+            {
+                var message = _repository.checkRegisterStatus(username, activityId);
+                return message;
+            }
+            catch (Exception ex)
+            {
+                return(ex.Message );
+            }
+        }
+
+        [HttpGet("/checkMyRegistionRequest")]
+        public ActionResult<List<ActivityRegistrationRequest>> checkMyRegistionRequest()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "未登录用户" });
+            try
+            {
+                var requests = _repository.checkMyRegistrationRequests(username);
+                return Ok(requests);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(null);
+            }
+        }
+
+        [HttpDelete("/cancelRegistration")]
+        public IActionResult CancelRegistration(int activityId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            try
+            {
+                _repository.CancelRegistrationRequest(activityId, username);
+                return Ok("已取消注册");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
