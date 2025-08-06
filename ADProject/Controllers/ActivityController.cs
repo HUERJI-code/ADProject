@@ -84,8 +84,8 @@ namespace ADProject.Controllers
             }
         }
 
-        [HttpPost("register")]
-        public IActionResult RegisterForActivity([FromBody] int activityId)
+        [HttpPost("register/{activityId}")]
+        public IActionResult RegisterForActivity(int activityId)
         {
 
             var username = HttpContext.Session.GetString("Username");
