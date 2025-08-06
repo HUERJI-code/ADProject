@@ -96,5 +96,37 @@ namespace ADProject.Controllers
             _repository.Delete(id);
             return NoContent();
         }
+
+        [HttpPut("/banUser")]
+        public IActionResult BanUser(int id)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (username is null)
+            {
+                return Unauthorized("请先登录！");
+            }
+            if (HttpContext.Session.GetString("UserType") != "admin")
+            {
+                return Unauthorized("只有管理员可以封禁用户！");
+            }
+            _repository.banUser(id);
+            return Ok("用户已被封禁");
+        }
+
+        [HttpPut("/UnbanUser")]
+        public IActionResult UnBanUser(int id)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (username is null)
+            {
+                return Unauthorized("请先登录！");
+            }
+            if (HttpContext.Session.GetString("UserType") != "admin")
+            {
+                return Unauthorized("只有管理员可以解封用户！");
+            }
+            _repository.UnbanUser(id);
+            return Ok("用户已被解封");
+        }
     }
 }

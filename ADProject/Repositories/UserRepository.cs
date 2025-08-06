@@ -79,5 +79,21 @@ namespace ADProject.Repositories
         {
             return _context.Users.Any(u => u.Name == name);
         }
+
+        public void banUser(int id)
+        {
+            var user = _context.Users.Find(id);
+            if (user is null) return;
+            user.status = "banned";
+            _context.SaveChanges();
+        }
+
+        public void UnbanUser(int id)
+        {
+            var user = _context.Users.Find(id);
+            if (user is null) return;
+            user.status = "active";
+            _context.SaveChanges();
+        }
     }
 }

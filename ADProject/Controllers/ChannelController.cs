@@ -254,6 +254,47 @@ namespace ADProject.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpPut("/banChannel")]
+        public IActionResult BanChannel(int channelId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            if (userType != "admin")
+                return BadRequest("只有admin可以封禁频道");
+            try
+            {
+                _repository.banChannel(channelId);
+                return Ok("频道已被封禁");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPut("/unbanChannel")]
+        public IActionResult UnbanChannel(int channelId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            if (userType != "admin")
+                return BadRequest("只有admin可以解封频道");
+            try
+            {
+                _repository.UnbanChannel(channelId);
+                return Ok("频道已被解封");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
     }
 }
 

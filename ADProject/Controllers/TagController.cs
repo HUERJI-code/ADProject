@@ -50,7 +50,7 @@ namespace ADProject.Controllers
             }
 
         // POST: api/tag
-        [HttpPost]
+        [HttpPost("/createTag")]
         public IActionResult Create([FromBody] Tag tag)
         {
             if (tag == null || string.IsNullOrWhiteSpace(tag.Name))
@@ -61,7 +61,12 @@ namespace ADProject.Controllers
             {
                 return BadRequest($"标签 '{tag.Name}' 已存在！");
             }
-            _tagRepository.AddTag(tag);
+            var newtag = new Tag
+            {
+                Name = tag.Name,
+                Description = tag.Description
+            };
+            _tagRepository.AddTag(newtag);
             return CreatedAtAction(nameof(Get), new { id = tag.TagId }, tag);
         }
     }

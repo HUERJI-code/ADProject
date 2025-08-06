@@ -29,6 +29,10 @@ namespace ADProject.Controllers
             {
                 return Unauthorized("用户名或邮箱不存在，或密码错误！");
             }
+            if(user.status != "active")
+            {
+                return Unauthorized("User is banned");
+            }
 
             // 写入会话
             HttpContext.Session.SetString("Username", user.Name);

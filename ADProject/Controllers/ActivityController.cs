@@ -266,5 +266,45 @@ namespace ADProject.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+
+        [HttpPut("/banActivity")]
+        public IActionResult BanActivity(int activityId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            if (userType != "admin")
+                return BadRequest("只有管理员可以禁用活动");
+            try
+            {
+                _repository.banActivity(activityId);
+                return Ok(new { message = "活动已被禁用" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPut("/unbanActivity")]
+        public IActionResult UnbanActivity(int activityId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            if (userType != "admin")
+                return BadRequest("只有管理员可以启用活动");
+            try
+            {
+                _repository.UnbanActivity(activityId);
+                return Ok(new { message = "活动已被启用" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }

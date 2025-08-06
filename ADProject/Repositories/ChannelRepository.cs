@@ -320,5 +320,23 @@ namespace ADProject.Repositories
             return ownedChannel.ToList();
         }
 
+        public void banChannel(int channelId)
+        {
+            var channel = _context.Channels.FirstOrDefault(c => c.ChannelId == channelId);
+            if (channel == null)
+                throw new Exception("频道不存在");
+            channel.status = "banned"; // 将频道状态设置为 banned
+            _context.SaveChanges();
+
+        }
+
+        public void UnbanChannel(int channelId)
+        {
+            var channel = _context.Channels.FirstOrDefault(c => c.ChannelId == channelId);
+            if (channel == null)
+                throw new Exception("频道不存在");
+            channel.status = "approved"; // 将频道状态设置为 approved
+            _context.SaveChanges();
+        }
     }
 }

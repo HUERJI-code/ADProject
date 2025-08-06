@@ -342,5 +342,23 @@ namespace ADProject.Repositories
                 throw new Exception("活动不存在");
             return activity.RegisteredUsers.Count;
         }
+
+        public void banActivity(int activityId)
+        {
+            var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
+            if (activity == null)
+                throw new Exception("活动不存在");
+            activity.Status = "banned"; // 将活动状态设置为取消
+            _context.SaveChanges();
+        }
+
+        public void UnbanActivity(int activityId)
+        {
+            var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
+            if (activity == null)
+                throw new Exception("活动不存在");
+            activity.Status = "approved"; // 将活动状态设置为已批准
+            _context.SaveChanges();
+        }
     }
 }
