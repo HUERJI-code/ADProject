@@ -153,6 +153,19 @@ namespace ADProject.Controllers
             public int UserId { get; set; }
         }
 
+        [HttpGet("/retrainModel")]
+        public async Task<IActionResult> RetrainModel()
+        {
+            // 调用 FastAPI 的 retrain endpoint
+            var response = await _httpClient.GetAsync("http://localhost:8000/retrain");
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, "Failed to retrain model");
+            }
+            // 返回成功消息
+            return Ok("Model retrained successfully");
+        }
+
 
     }
 }

@@ -1,16 +1,25 @@
 ﻿using ADProject.Models;
 using ADProject.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
 
 namespace ADProject.Repositories
 {
     public class UserProfileRepository
     {
         private readonly AppDbContext _context;
+        private readonly HttpClient _httpClient;
 
-        public UserProfileRepository(AppDbContext context)
+        public UserProfileRepository(AppDbContext context, HttpClient httpClient)
         {
             _context = context;
+            _httpClient = httpClient;
+        }
+
+        public async Task<bool> RetrainModelAsync()
+        {
+            var response = await _httpClient.GetAsync("http://localhost:8000/retrain");
+            return response.IsSuccessStatusCode;
         }
 
         public UserProfile GetProfileByUsername(string username)
@@ -25,6 +34,8 @@ namespace ADProject.Repositories
 
         public void UpsertProfile(string username, UpdateUserProfileDto dto)
         {
+            var a = 0;
+
             var user = _context.Users
                 .Include(u => u.Profile)
                 .FirstOrDefault(u => u.Name == username);
@@ -43,11 +54,13 @@ namespace ADProject.Repositories
                     Gender = dto.Gender,
                     Tags = tagEntities,
                     UserId = user.UserId,
-                    User = user // 关联用户
+                    User = user, // 关联用户
+                    url = dto.Url // 确保 URL 不为 null
                 };
 
                 _context.UserProfiles.Add(newProfile);
                 user.Profile = newProfile;
+                a = 1;
             }
             else
             {
@@ -64,6 +77,15 @@ namespace ADProject.Repositories
             try
             {
                 _context.SaveChanges();
+                if(a == 1)
+                {
+                    Console.WriteLine($"创建用户 {username} 的个人资料");
+                    RetrainModelAsync().Wait();
+                }
+                else
+                {
+                    Console.WriteLine($"更新用户 {username} 的个人资料");
+                }
             }
             catch (Exception ex)
             {
