@@ -1,5 +1,6 @@
 ﻿using ADProject.Models;
 using ADProject.Repositories;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -13,11 +14,13 @@ namespace ADProject.Controllers
     {
         private readonly UserRepository _userRepository;
         private readonly HttpClient _httpClient;
+        private readonly ActivityRepository _activityRepository;
 
-        public MLController(UserRepository userRepository, IHttpClientFactory httpClientFactory)
+        public MLController(UserRepository userRepository, IHttpClientFactory httpClientFactory, ActivityRepository repository)
         {
             _userRepository = userRepository;
             _httpClient = httpClientFactory.CreateClient();
+            _activityRepository = repository;
         }
 
         [HttpGet("/getRecommendations")]
@@ -29,6 +32,19 @@ namespace ADProject.Controllers
                 return Unauthorized("User not logged in.");
             }
             var userId = _userRepository.GetUserIdByUserName(username);
+            var user = _userRepository.GetById(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+            if (user.status == "banned")
+            {
+                return Forbid("User is banned.");
+            }
+            if (user.Profile == null)
+            {
+                return Ok(_activityRepository.GetRandomRecommendation());
+            }
             var payload = new
             {
                 user_id = userId,
@@ -72,12 +88,24 @@ namespace ADProject.Controllers
                 return Unauthorized("User not logged in.");
             }
             var userId = _userRepository.GetUserIdByUserName(username);
+            var user = _userRepository.GetById(userId);
             var payload = new
             {
                 user_id = userId,
                 top_k = 3
             };
-
+            if( user == null)
+            {
+                return NotFound("User not found.");
+            }
+            if (user.status == "banned")
+            {
+                return Forbid("User is banned.");
+            }
+            if (user.Profile == null)
+            {
+                return Ok(_userRepository.GetRandomUsers());
+            }
             // 调用 FastAPI
             var response = await _httpClient.PostAsJsonAsync(
                 "http://localhost:8000/similar-users",

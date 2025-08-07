@@ -7,6 +7,7 @@ namespace ADProject.Repositories
     public class UserRepository
     {
         private readonly AppDbContext _context;
+        private readonly Random _rand = new Random();
 
         public UserRepository(AppDbContext context)
         {
@@ -104,6 +105,18 @@ namespace ADProject.Repositories
                 throw new Exception("User not found");
             }
             return user.UserId;
+        }
+
+        public List<int> GetRandomUsers(int count = 5)
+        {
+            var allIds = _context.Users
+                .Select(u => u.UserId)
+                .ToList();
+
+            return allIds
+                .OrderBy(_ => _rand.Next())
+                .Take(count)
+                .ToList();
         }
     }
 }

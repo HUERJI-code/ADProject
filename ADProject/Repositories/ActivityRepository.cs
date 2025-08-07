@@ -1,6 +1,7 @@
 ﻿using ADProject.Models;
 using ADProject.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace ADProject.Repositories
 {
@@ -458,6 +459,43 @@ namespace ADProject.Repositories
                 _systemMessageRepository.Create(createSystemMessageDto);
             }
         }
+
+        public List<int> GetRandomRecommendation()
+        {
+            var today = DateTime.Today;
+            // 1. 从数据库取出所有活动到内存
+            var allActivities = _context.Activities.ToList();
+
+            // 2. 过滤出 EndTime 在今天之后的活动
+            var future = allActivities
+                .Where(a =>
+                {
+                    // 解析 "yyyy/MM/dd HH:mm" 格式的 EndTime
+                    if (DateTime.TryParseExact(
+                            a.EndTime,
+                            "yyyy/MM/dd HH:mm",
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.None,
+                            out var dt))
+                    {
+                        return dt > today;
+                    }
+                    return false;
+                });
+
+            // 3. 随机打乱并取前 5 条
+            var rand = new Random();
+            var top5 = future
+                .OrderBy(_ => rand.Next())
+                .Take(5);
+
+            // 4. 只返回 ActivityId 列表
+            return top5
+                .Select(a => a.ActivityId)
+                .ToList();
+        }
+
+
 
     }
 }
