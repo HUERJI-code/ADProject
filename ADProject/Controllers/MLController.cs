@@ -128,7 +128,7 @@ namespace ADProject.Controllers
                 .ToList();
 
             // 返回最终格式
-            return Ok(new SimilarUsersListResponse { SimilarUsers = ids });
+            return Ok(ids );
         }
 
         public class SimilarUsersListResponse
