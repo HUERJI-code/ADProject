@@ -43,6 +43,7 @@ builder.Services.AddScoped<UserProfileRepository>();
 builder.Services.AddScoped<ActivityRepository>();
 builder.Services.AddScoped<ChannelRepository>();
 builder.Services.AddScoped<SystemMessageRepository>();
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

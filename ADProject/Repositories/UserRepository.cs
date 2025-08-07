@@ -95,5 +95,15 @@ namespace ADProject.Repositories
             user.status = "active";
             _context.SaveChanges();
         }
+
+        public int GetUserIdByUserName(string username)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Name == username);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+            return user.UserId;
+        }
     }
 }

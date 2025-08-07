@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ADProject.Models
 {
@@ -8,6 +9,7 @@ namespace ADProject.Models
         public int Id { get; set; }
 
             public int UserId { get; set; }
+            [JsonIgnore]
             public virtual User User { get; set; }
 
             public virtual List<Tag> Tags { get; set; } = new();

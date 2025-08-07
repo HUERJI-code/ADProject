@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ADProject.Models
 {
@@ -13,10 +14,11 @@ namespace ADProject.Models
         public string? Url { get; set; } = string.Empty; // 频道照片链接
 
         public string status { get; set; }  // active / archived / deleted
+        [JsonIgnore]
         public virtual User Creator { get; set; }
 
         public string description { get; set; } = string.Empty; // 频道描述
-
+        [JsonIgnore]
         public virtual List<User> Members { get; set; } = new();
         public virtual List<ChannelMessage> Messages { get; set; } = new();  // 👈 新增
 

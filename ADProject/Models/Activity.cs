@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ADProject.Models
 {
@@ -17,10 +18,13 @@ namespace ADProject.Models
         public int number { get; set; } // 活动最多人数
 
         public int CreatedBy { get; set; }
+        [JsonIgnore]
         public virtual User Creator { get; set; }
 
         public virtual List<Tag> Tags { get; set; } = new();
+        [JsonIgnore]
         public virtual List<User> RegisteredUsers { get; set; } = new();
+        [JsonIgnore]
 
         public virtual List<User> FavouritedByUsers { get; set; } = new();
 

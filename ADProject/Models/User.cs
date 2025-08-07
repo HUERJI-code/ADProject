@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ADProject.Models
 {
@@ -13,10 +14,13 @@ namespace ADProject.Models
         public string Role { get; set; }
 
         public string status { get; set; } = "active";  // active / inactive / banned
+        [JsonIgnore]
 
         public virtual List<Activity> RegisteredActivities { get; set; } = new();
+        [JsonIgnore]
         public virtual List<Channel> Channels { get; set; } = new();
         public virtual List<SystemMessage> ReceivedMessages { get; set; } = new();
+        [JsonIgnore]
 
         public virtual List<Activity> favouriteActivities { get; set; } = new();
 
