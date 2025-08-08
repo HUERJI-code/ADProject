@@ -29,7 +29,7 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
             {
-                return Unauthorized("User not logged in.");
+                return Ok(_activityRepository.GetRandomRecommendation());
             }
             var userId = _userRepository.GetUserIdByUserName(username);
             var user = _userRepository.GetById(userId);
