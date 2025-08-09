@@ -40,7 +40,15 @@ builder.Services.AddControllers().AddJsonOptions(opt =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AppDbContext>();
+var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    if (!string.IsNullOrWhiteSpace(connStr))
+    {
+        options.UseMySql(connStr, ServerVersion.AutoDetect(connStr));
+        options.UseLazyLoadingProxies();
+    }
+});
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TagRepository>();
 builder.Services.AddScoped<UserProfileRepository>();
