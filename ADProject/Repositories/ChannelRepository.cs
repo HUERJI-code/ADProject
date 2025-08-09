@@ -354,5 +354,21 @@ namespace ADProject.Repositories
                 .Include(r => r.channel) // 包含申请的频道信息
                 .ToList();
         }
+
+        public void quitChannel(string username, int channelId)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Name == username);
+            if (user == null)
+                throw new Exception("用户不存在");
+            var channel = _context.Channels
+                .Include(c => c.Members)
+                .FirstOrDefault(c => c.ChannelId == channelId);
+            if (channel == null)
+                throw new Exception("频道不存在");
+            if (!channel.Members.Any(m => m.UserId == user.UserId))
+                throw new Exception("您不在此频道中");
+            channel.Members.Remove(user);
+            _context.SaveChanges();
+        }
     }
 }

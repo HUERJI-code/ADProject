@@ -334,6 +334,26 @@ namespace ADProject.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpGet("quitChannel")]
+        public IActionResult QuitChannel(int channelId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("未登录用户！");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (userType != "user")
+                return BadRequest("只有普通用户可以退出频道");
+            try
+            {
+                _repository.quitChannel(username, channelId);
+                return Ok("已成功退出频道");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }
 

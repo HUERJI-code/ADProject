@@ -1,0 +1,110 @@
+name: build-test-push-deploy
+
+on:
+  workflow_run:
+    workflows: ["ci-build-push"]     # 这里的名字要和 docker.yml 里的 name 一致
+    types: [completed] # 需要的话改成你使用的分支
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  IMAGE_NAME: huerjidocker/adproject
+  IMAGE_TAG: latest
+  AZ_RESOURCE_GROUP: adproject-rg
+  AZ_WEBAPP_NAME: adproject-webapp
+  DOCKERFILE_PATH: ./Dockerfile       # 如果你的 Dockerfile 不在根目录，请改这里
+  SOLUTION_PATH: ./ADProject.sln      # 如果解决方案路径不同，请改这里
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ===== .NET Restore/Build/Test =====
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-build
+
+      # ===== Build & Push Docker Image to Docker Hub =====
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push (linux/amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ env.DOCKERFILE_PATH }}
+          push: true
+          platforms: linux/amd64
+          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+  deploy:
+    name: Deploy to Azure Web App (Container)
+    needs: build-test-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Azure Login (Service Principal)
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # 把 WebApp 切到最新镜像；镜像是 public 的话下面这条就够了
+      - name: Update Web App to latest Docker image
+        run: |
+          az webapp config container set \
+            --name ${{ env.AZ_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZ_RESOURCE_GROUP }} \
+            --docker-custom-image-name ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            --docker-registry-server-url https://index.docker.io
+
+      # 如果你的镜像是私有仓库，取消下面注释并填写 Docker Hub 账号/Token（同时保留上一步即可）
+      # - name: (Private) Attach Docker Hub credentials
+      #   run: |
+      #     az webapp config container set \
+      #       --name ${{ env.AZ_WEBAPP_NAME }} \
+      #       --resource-group ${{ env.AZ_RESOURCE_GROUP }} \
+      #       --docker-custom-image-name ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+      #       --docker-registry-server-url https://index.docker.io \
+      #       --docker-registry-server-user "${{ secrets.DOCKERHUB_USERNAME }}" \
+      #       --docker-registry-server-password "${{ secrets.DOCKERHUB_TOKEN }}"
+
+      # 确保容器端口（你容器里监听 8080）
+      - name: Ensure WEBSITES_PORT=8080
+        run: |
+          az webapp config appsettings set \
+            --name ${{ env.AZ_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZ_RESOURCE_GROUP }} \
+            --settings WEBSITES_PORT=8080 ASPNETCORE_ENVIRONMENT=Production
+
+      # 可选：重启一下（更保险）
+      - name: Restart Web App
+        run: az webapp restart -g ${{ env.AZ_RESOURCE_GROUP }} -n ${{ env.AZ_WEBAPP_NAME }}
+
+      # 可选：预热
+      # - name: Warm up
+      #   run: curl -kL "https://${{ env.AZ_WEBAPP_NAME }}.azurewebsites.net/" || true
