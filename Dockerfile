@@ -10,9 +10,16 @@ RUN dotnet publish ADProject/ADProject.csproj -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
 # 装 MySQL 8
+# 安装工具并添加 MySQL APT 源
 RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg lsb-release && \
+    wget https://dev.mysql.com/get/mysql-apt-config_0.8.32-1_all.deb && \
+    DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.32-1_all.deb && \
+    rm -f mysql-apt-config_0.8.32-1_all.deb && \
+    apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server && \
     rm -rf /var/lib/apt/lists/*
+
 
 # 准备 MySQL 数据目录
 RUN mkdir -p /var/run/mysqld && chown -R mysql:mysql /var/run/mysqld \
