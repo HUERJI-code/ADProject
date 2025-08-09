@@ -2,6 +2,7 @@
 
 namespace ADProject.Models
 {
+    [Table("channelmessages")]
     public class ChannelMessage
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

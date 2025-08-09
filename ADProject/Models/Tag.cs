@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ADProject.Models
 {
+    [Table("tags")]
     public class Tag
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

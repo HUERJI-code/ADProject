@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace ADProject.Models
 {
+    [Table("users")]
     public class User
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

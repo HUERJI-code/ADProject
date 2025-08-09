@@ -2,6 +2,7 @@
 
 namespace ADProject.Models
 {
+    [Table("channelreports")]
     public class ChannelReport
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

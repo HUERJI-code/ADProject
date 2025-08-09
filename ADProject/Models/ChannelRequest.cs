@@ -2,6 +2,7 @@
 
 namespace ADProject.Models
 {
+    [Table("channelrequest")]
     public class ChannelRequest
     {
 

@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace ADProject.Models
 {
+    [Table("channels")]
     public class Channel
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -2,6 +2,7 @@
 
 namespace ADProject.Models
 {
+    [Table("systemmessages")]
     public class SystemMessage
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

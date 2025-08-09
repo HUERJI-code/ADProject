@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace ADProject.Models
 {
-        public class UserProfile
+    [Table("userprofiles")]
+    public class UserProfile
         {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }

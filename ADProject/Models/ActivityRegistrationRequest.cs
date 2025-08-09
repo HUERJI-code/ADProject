@@ -2,6 +2,7 @@
 
 namespace ADProject.Models
 {
+    [Table("activityregistrationrequests")]
     public class ActivityRegistrationRequest
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

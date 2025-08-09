@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace ADProject.Models
 {
+    [Table("activities")]
     public class Activity
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
