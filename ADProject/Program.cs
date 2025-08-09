@@ -1,40 +1,44 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using ADProject.Services;
-using ADProject.Models;
 using ADProject.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+// ---- CORS：只允许前端页面的 Origin，并允许凭据 ----
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("Frontend", policy =>
     {
-        policy
-            .WithOrigins("http://localhost:3000") // 允许的前端源地址
-                .AllowCredentials() // 允许携带凭据
-                .AllowAnyMethod() // 允许所有 HTTP 方法
-                .AllowAnyHeader();
+        policy.WithOrigins(
+                "http://localhost:3000"    // 本地 React
+                                           // 将来把你的前端正式域名也加进来，比如 "https://www.example.com"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();          // 必须：允许携带 Cookie
     });
 });
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// ---- Session：跨站 Cookie 需要 SameSite=None，开发期先不强制 Secure ----
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(o =>
+{
+    o.IdleTimeout = TimeSpan.FromMinutes(30);
+    o.Cookie.Name = ".adproject.sid";
+    o.Cookie.HttpOnly = true;
+    o.Cookie.IsEssential = true;
+    o.Cookie.SameSite = SameSiteMode.None;            // 跨站必须 None
+    o.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // 开发/HTTP 用 None；上线 HTTPS 改 Always
+});
+
+builder.Services.AddControllers().AddJsonOptions(opt =>
+{
+    opt.JsonSerializerOptions.ReferenceHandler =
+        System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-});
 
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddScoped<UserRepository>();
@@ -47,34 +51,34 @@ builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-app.UseSession();
-
-// Configure the HTTP request pipeline.
+// ---- 中间件执行顺序很关键 ----
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
+// ACI/本地用的是 HTTP，先关掉强制 HTTPS（否则会 307 跳 https 导致失败）
+// 如果你确实配了证书再打开。
+// app.UseHttpsRedirection();
 
-
-app.UseHttpsRedirection();
-
+app.UseCors("Frontend");   //CORS 要靠前
+app.UseSession();          //使用 Session 必须启用
 app.UseAuthorization();
 
 app.MapControllers();
+
+// 可选：你这个 EnsureCreated 会改库结构，生产不建议
 initDB();
+
 app.Run();
+
 
 void initDB()
 {
-    // create the environment to retrieve our database context
-    using (var scope = app.Services.CreateScope())
-    {
-        // get database context from DI-container
-        var ctx = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        if (!ctx.Database.CanConnect())
-            ctx.Database.EnsureCreated(); // create database
-    }
+    using var scope = app.Services.CreateScope();
+    var ctx = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (!ctx.Database.CanConnect())
+        ctx.Database.EnsureCreated();
 }
+

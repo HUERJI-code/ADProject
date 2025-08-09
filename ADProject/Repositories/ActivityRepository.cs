@@ -322,6 +322,16 @@ namespace ADProject.Repositories
             return user.RegisteredActivities;
         }
 
+        public List<Activity> GetRegisteredActivitiesByUserId(int userId)
+        {
+            var user = _context.Users
+                .Include(u => u.RegisteredActivities)
+                .FirstOrDefault(u => u.UserId == userId);
+            if (user == null)
+                throw new Exception("用户不存在");
+            return user.RegisteredActivities;
+        }
+
         public List<Activity> GetLoginOrganizerActivities(string username)
         {
             var user = _context.Users
@@ -495,7 +505,16 @@ namespace ADProject.Repositories
                 .ToList();
         }
 
+        public List<Activity> GetFavouriteByUserId(int userId)
+        {
+            var user = _context.Users
+                .Include(u => u.favouriteActivities)
+                .FirstOrDefault(u => u.UserId == userId);
+            if (user == null)
+                throw new Exception("用户不存在");
+            return user.favouriteActivities;
 
 
+        }
     }
 }

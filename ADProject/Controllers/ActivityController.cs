@@ -9,10 +9,12 @@ namespace ADProject.Controllers
     public class ActivityController : ControllerBase
     {
         private readonly ActivityRepository _repository;
+        private readonly UserRepository _userRepository;
 
-        public ActivityController(ActivityRepository repository)
+        public ActivityController(ActivityRepository repository, UserRepository userRepository)
         {
             _repository = repository;
+            _userRepository = userRepository;
         }
 
         [HttpPost("create")]
@@ -209,6 +211,23 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpGet("/GetRegisteredActivitiesByUserId")]
+        public ActionResult<List<Activity>> GetRegisteredActivitiesByUserId(int userId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "未登录用户" });
+            try
+            {
+                var activities = _repository.GetRegisteredActivitiesByUserId(userId);
+                return Ok(activities);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
         [HttpGet("/getLoginOrganizerActivities")]
         public ActionResult<List<Activity>> GetLoginOrganizerActivities()
         {
@@ -375,6 +394,23 @@ namespace ADProject.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("/getActivityByUserId")]
+        public ActionResult<List<Activity>> GetActivityByUserId(int userId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { message = "未登录用户" });
+            try
+            {
+                var activities = _repository.GetFavouriteByUserId(userId);
+                return Ok(activities);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
         }
 
