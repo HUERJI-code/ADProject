@@ -35,116 +35,136 @@ namespace ADProject.Services
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // 🔗 User ↔ Profile（一对一）
+            // ==== 显式指定实体表名（与你库 SHOW TABLES 一致，全小写）====
+            modelBuilder.Entity<User>().ToTable("users");
+            modelBuilder.Entity<UserProfile>().ToTable("userprofiles");
+            modelBuilder.Entity<Tag>().ToTable("tags");
+            modelBuilder.Entity<Activity>().ToTable("activities");
+            modelBuilder.Entity<ActivityRegistrationRequest>().ToTable("activityregistrationrequests");
+            modelBuilder.Entity<ActivityRequest>().ToTable("activityrequest");
+            modelBuilder.Entity<Channel>().ToTable("channels");
+            modelBuilder.Entity<ChannelReport>().ToTable("channelreports");
+            modelBuilder.Entity<SystemMessage>().ToTable("systemmessages");
+            modelBuilder.Entity<ChannelMessage>().ToTable("channelmessages");
+            modelBuilder.Entity<ChannelRequest>().ToTable("channelrequest");
+
+            // ==== 一对一 / 一对多（保持你原来的关系不变）====
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Profile)
                 .WithOne(p => p.User)
                 .HasForeignKey<UserProfile>(p => p.UserId);
 
-            // 🔗 Profile ↔ Tags（多对多）
-            modelBuilder.Entity<UserProfile>()
-                .HasMany(up => up.Tags)
-                .WithMany() // ❗️不指定 Tag 的导航属性
-                .UsingEntity<Dictionary<string, object>>(
-                    "UserProfileTag",
-                    j => j.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
-                    j => j.HasOne<UserProfile>().WithMany().HasForeignKey("UserProfileId")
-                );
-
-            modelBuilder.Entity<Channel>()
-                .HasMany(a => a.Tags)
-                .WithMany()
-                .UsingEntity<Dictionary<string, object>>(
-                    "ChannelTag",
-                    j => j.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
-                    j => j.HasOne<Channel>().WithMany().HasForeignKey("ChannelId")
-                );
-
-            modelBuilder.Entity<Activity>()
-                .HasMany(a => a.Tags)
-                .WithMany()
-                .UsingEntity<Dictionary<string, object>>(
-                    "ActivityTag",
-                    j => j.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
-                    j => j.HasOne<Activity>().WithMany().HasForeignKey("ActivityId")
-                );
-
-            modelBuilder.Entity<Activity>()
-                .HasMany(a => a.RegisteredUsers)
-                .WithMany(u => u.RegisteredActivities) // 👈 这里指定反向属性
-                .UsingEntity<Dictionary<string, object>>(
-                    "ActivityUser",
-                    j => j.HasOne<User>().WithMany().HasForeignKey("UserId"),
-                    j => j.HasOne<Activity>().WithMany().HasForeignKey("ActivityId")
-                );
-
-
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.favouriteActivities)
-                .WithMany(a => a.FavouritedByUsers) // 这里绑定双向导航
-                .UsingEntity<Dictionary<string, object>>(
-                    "UserFavouriteActivity",
-                    j => j.HasOne<Activity>().WithMany().HasForeignKey("ActivityId"),
-                    j => j.HasOne<User>().WithMany().HasForeignKey("UserId")
-                );
-
-
-
-
-            // 🔗 Activity ↔ Creator
             modelBuilder.Entity<Activity>()
                 .HasOne(a => a.Creator)
                 .WithMany()
                 .HasForeignKey(a => a.CreatedBy);
 
-            // 🔗 Channel ↔ Creator
             modelBuilder.Entity<Channel>()
                 .HasOne(c => c.Creator)
                 .WithMany()
                 .HasForeignKey(c => c.CreatedBy);
 
-            // 🔗 ActivityRequest ↔ Reviewer
             modelBuilder.Entity<ActivityRequest>()
-                .HasOne(r => r.ReviewedBy)
-                .WithMany()
+                .HasOne(r => r.ReviewedBy).WithMany()
                 .HasForeignKey(r => r.ReviewedById);
 
-            // 🔗 ChannelReport ↔ Reporter
             modelBuilder.Entity<ChannelReport>()
-                .HasOne(r => r.ReportedBy)
-                .WithMany()
+                .HasOne(r => r.ReportedBy).WithMany()
                 .HasForeignKey(r => r.ReportedById);
 
-            // 🔗 SystemMessage ↔ Receiver
             modelBuilder.Entity<SystemMessage>()
-                .HasOne(m => m.Receiver)
-                .WithMany(u => u.ReceivedMessages)
+                .HasOne(m => m.Receiver).WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(m => m.ReceiverId);
 
-            // 🔗 ActivityRegistrationRequest ↔ User
             modelBuilder.Entity<ActivityRegistrationRequest>()
-                .HasOne(r => r.User)
-                .WithMany()
+                .HasOne(r => r.User).WithMany()
                 .HasForeignKey(r => r.UserId);
 
-            // 🔗 ActivityRegistrationRequest ↔ Activity
             modelBuilder.Entity<ActivityRegistrationRequest>()
-                .HasOne(r => r.Activity)
-                .WithMany()
+                .HasOne(r => r.Activity).WithMany()
                 .HasForeignKey(r => r.ActivityId);
 
-            // 🔗 ChannelMessage ↔ Channel（一对多）
             modelBuilder.Entity<ChannelMessage>()
-                .HasOne(m => m.Channel)
-                .WithMany(c => c.Messages)
+                .HasOne(m => m.Channel).WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ChannelId);
 
-            // 🔗 ChannelMessage ↔ PostedBy（一对多）
             modelBuilder.Entity<ChannelMessage>()
-                .HasOne(m => m.PostedBy)
-                .WithMany()
+                .HasOne(m => m.PostedBy).WithMany()
                 .HasForeignKey(m => m.PostedById);
+
+            // ==== 多对多：显式指定“中间表”名字 + 复合主键 ====
+
+            // UserProfile ↔ Tag  ->  userprofiletag
+            modelBuilder.Entity<UserProfile>()
+                .HasMany(up => up.Tags)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "userprofiletag",
+                    r => r.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
+                    l => l.HasOne<UserProfile>().WithMany().HasForeignKey("UserProfileId"),
+                    j => { j.ToTable("userprofiletag"); j.HasKey("UserProfileId", "TagId"); });
+
+            // Channel ↔ Tag  ->  channeltag
+            modelBuilder.Entity<Channel>()
+                .HasMany(c => c.Tags)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "channeltag",
+                    r => r.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
+                    l => l.HasOne<Channel>().WithMany().HasForeignKey("ChannelId"),
+                    j => { j.ToTable("channeltag"); j.HasKey("ChannelId", "TagId"); });
+
+            // Activity ↔ Tag  ->  activitytag
+            modelBuilder.Entity<Activity>()
+                .HasMany(a => a.Tags)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "activitytag",
+                    r => r.HasOne<Tag>().WithMany().HasForeignKey("TagId"),
+                    l => l.HasOne<Activity>().WithMany().HasForeignKey("ActivityId"),
+                    j => { j.ToTable("activitytag"); j.HasKey("ActivityId", "TagId"); });
+
+            // Activity ↔ User(报名/参加)  ->  activityuser
+            modelBuilder.Entity<Activity>()
+                .HasMany(a => a.RegisteredUsers)
+                .WithMany(u => u.RegisteredActivities)
+                .UsingEntity<Dictionary<string, object>>(
+                    "activityuser",
+                    r => r.HasOne<User>().WithMany().HasForeignKey("UserId"),
+                    l => l.HasOne<Activity>().WithMany().HasForeignKey("ActivityId"),
+                    j => { j.ToTable("activityuser"); j.HasKey("ActivityId", "UserId"); });
+
+            // User ↔ Activity(收藏)  ->  userfavouriteactivity
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.favouriteActivities)
+                .WithMany(a => a.FavouritedByUsers)
+                .UsingEntity<Dictionary<string, object>>(
+                    "userfavouriteactivity",
+                    r => r.HasOne<Activity>().WithMany().HasForeignKey("ActivityId"),
+                    l => l.HasOne<User>().WithMany().HasForeignKey("UserId"),
+                    j => { j.ToTable("userfavouriteactivity"); j.HasKey("UserId", "ActivityId"); });
+
+            // 如果你还有 Channel ↔ User(成员)  ->  channeluser
+            // 视你的实体是否有导航属性，如果有，按下面模式补一段：
+            // Channel ↔ User 成员关系 -> channeluser
+            modelBuilder.Entity<Channel>()
+                .HasMany(c => c.Members)               // 你的导航属性名
+                .WithMany(u => u.Channels)       // 你的导航属性名
+                .UsingEntity<Dictionary<string, object>>(
+                    "channeluser",
+                    r => r.HasOne<User>()
+                          .WithMany()
+                          .HasForeignKey("MembersUserId"),      // ← 按库里真实列名
+                    l => l.HasOne<Channel>()
+                          .WithMany()
+                          .HasForeignKey("ChannelsChannelId"),  // ← 按库里真实列名
+                    j =>
+                    {
+                        j.ToTable("channeluser");
+                        j.HasKey("ChannelsChannelId", "MembersUserId");
+                    });
+
         }
+
     }
 }
