@@ -8,13 +8,18 @@ namespace ADProject.Services
 
         public AppDbContext() { }
 
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySql(
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseMySql(
                 "Server=localhost;Database=adproject;User=root;Password=;",
                 new MySqlServerVersion(new Version(8, 0, 39)) // Adjust version as needed
                 );
-            optionsBuilder.UseLazyLoadingProxies(); // Enable lazy loading
+                optionsBuilder.UseLazyLoadingProxies(); // Enable lazy loading
+            }
         }
 
         public DbSet<User> Users { get; set; }

@@ -69,7 +69,10 @@ app.UseAuthorization();
 app.MapControllers();
 
 // 可选：你这个 EnsureCreated 会改库结构，生产不建议
-initDB();
+if (!app.Environment.IsEnvironment("Test"))
+{
+    initDB();
+}
 
 app.Run();
 

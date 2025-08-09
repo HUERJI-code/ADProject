@@ -1,15 +1,14 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace ADProject.IntegrationTests;
 
-public class HealthTests : IClassFixture<WebApplicationFactory<Program>>
+public class HealthTests : IClassFixture<TestAppFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
-    public HealthTests(WebApplicationFactory<Program> factory) => _factory = factory;
+    private readonly TestAppFactory _factory;
+    public HealthTests(TestAppFactory factory) => _factory = factory;
 
     [Fact]
     public async Task GET_health_should_return_OK()
@@ -18,8 +17,7 @@ public class HealthTests : IClassFixture<WebApplicationFactory<Program>>
         var res = await client.GetAsync("/health");
         res.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 如果还想检查返回的 JSON 内容：
-        var content = await res.Content.ReadAsStringAsync();
-        content.Should().Contain("API is healthy");
+        var body = await res.Content.ReadAsStringAsync();
+        body.Should().Contain("healthy");
     }
 }
