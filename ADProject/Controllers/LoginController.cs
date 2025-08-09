@@ -78,5 +78,12 @@ namespace ADProject.Controllers
             return Ok(new { message = "已登录", userType });
 
         }
+
+        [HttpGet("/health")]
+        public IActionResult HealthCheck()
+        {
+            // 健康检查接口
+            return Ok(new { message = "API is healthy" });
+        }
     }
 }

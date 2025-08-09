@@ -82,3 +82,5 @@ void initDB()
         ctx.Database.EnsureCreated();
 }
 
+public partial class Program { }
+
