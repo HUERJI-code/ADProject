@@ -14,27 +14,14 @@ RUN dotnet publish ADProject/ADProject.csproj -c Release -o /app/publish /p:UseA
 # ============ runtime stage ============
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
-# 安装 MySQL 8（保留你现有逻辑）
+# 安装 SSH 与 mysql 客户端（便于容器内测试）
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg lsb-release && \
-    wget https://dev.mysql.com/get/mysql-apt-config_0.8.32-1_all.deb && \
-    DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.32-1_all.deb && \
-    rm -f mysql-apt-config_0.8.32-1_all.deb && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server && \
-    rm -rf /var/lib/apt/lists/*
-
-# 准备 MySQL 数据目录（保留）
-RUN mkdir -p /var/run/mysqld && chown -R mysql:mysql /var/run/mysqld \
-    && rm -rf /var/lib/mysql && mkdir -p /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql
-
-# ===== 新增：安装并配置 SSH（用于 App Service 远程排查）=====
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openssh-server && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openssh-server mysql-client && \
     mkdir -p /var/run/sshd && \
     echo "root:TempStrongP@ssw0rd" | chpasswd && \
     sed -i 's/^#\?Port .*/Port 2222/' /etc/ssh/sshd_config && \
     sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's@session\s\+required\s\+pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd && \
     rm -rf /var/lib/apt/lists/*
 
@@ -42,16 +29,9 @@ RUN apt-get update && \
 WORKDIR /app
 COPY --from=build /app/publish/ ./
 
-# 拷贝初始化 SQL（若无可注释）
-COPY db/Add_new.sql /docker-entrypoint-initdb.d/Add_new.sql
-
-# 启动脚本：初始化 DB 后启动 ASP.NET
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# 暴露端口：8080 给站点，2222 给 SSH
-EXPOSE 8080 2222
+# Web 端口与 SSH 端口
 ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080 2222
 
-# 同时启动 SSH 和你的应用（sshd 前台，随后执行入口脚本）
-CMD /usr/sbin/sshd -D & /entrypoint.sh
+# 同时启动 SSH 与 ASP.NET 应用
+CMD /usr/sbin/sshd -D & dotnet ADProject.dll
