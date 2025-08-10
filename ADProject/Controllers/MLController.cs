@@ -15,12 +15,14 @@ namespace ADProject.Controllers
         private readonly UserRepository _userRepository;
         private readonly HttpClient _httpClient;
         private readonly ActivityRepository _activityRepository;
+        private readonly TagRepository _tagRepository;
 
-        public MLController(UserRepository userRepository, IHttpClientFactory httpClientFactory, ActivityRepository repository)
+        public MLController(UserRepository userRepository, IHttpClientFactory httpClientFactory, ActivityRepository repository, TagRepository tagRepository)
         {
             _userRepository = userRepository;
             _httpClient = httpClientFactory.CreateClient();
             _activityRepository = repository;
+            _tagRepository = tagRepository;
         }
 
         [HttpGet("/getRecommendations")]
@@ -52,7 +54,7 @@ namespace ADProject.Controllers
             };
             var response = await _httpClient.PostAsJsonAsync(
             //"http://127.0.0.1:8000/recommend/",
-            "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/recommendUser/",
+            "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/recommendActivity/",
             payload
         );
 
@@ -110,7 +112,7 @@ namespace ADProject.Controllers
             // 调用 FastAPI
             var response = await _httpClient.PostAsJsonAsync(
                 //"http://localhost:8000/similar-users",
-                "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/similar-users",
+                "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/recommendUser/",
                 payload
             );
 
@@ -159,7 +161,7 @@ namespace ADProject.Controllers
         public async Task<IActionResult> RetrainModel()
         {
             // 调用 FastAPI 的 retrain endpoint
-            var response = await _httpClient.GetAsync("http://localhost:8000/retrain");
+            var response = await _httpClient.GetAsync("https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/retrain/");
             if (!response.IsSuccessStatusCode)
             {
                 return StatusCode((int)response.StatusCode, "Failed to retrain model");
@@ -168,6 +170,46 @@ namespace ADProject.Controllers
             return Ok("Model retrained successfully");
         }
 
+        [HttpPost("predict-tags")]
+        public async Task<IActionResult> PredictTags([FromBody] PredictTagsRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.title))
+            {
+                return BadRequest("Invalid request data");
+            }
+            // 调用 FastAPI 的 predict_tags endpoint
+            var response = await _httpClient.PostAsJsonAsync(
+                "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/predictTags/",
+                request
+            );
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, "Failed to predict tags");
+            }
+            // 反序列化返回的 JSON
+            var result = await response.Content.ReadFromJsonAsync<PredictTagsResponse>();
+            if (result?.Tags == null)
+            {
+                return BadRequest("Invalid response from prediction service");
+            }
+            var tagIds = _tagRepository.AddTagIfNotExists(result.Tags);
+            return Ok(tagIds);
+        }
+
+        public class PredictTagsRequest
+        {
+            [JsonPropertyName("title")]
+            public string title { get; set; }
+
+            [JsonPropertyName("description")]
+            public string description { get; set; }
+        }
+
+        public class PredictTagsResponse
+        {
+            [JsonPropertyName("predicted_tags")]
+            public List<string> Tags { get; set; }
+        }
 
     }
 }

@@ -46,6 +46,28 @@ namespace ADProject.Repositories
             return _context.Tags.Any(t => t.Name == name);
         }
 
+        public List<int> AddTagIfNotExists(List<string> tagNames)
+        {
+            foreach (var name in tagNames)
+            {
+                if (!TagExists(name))
+                {
+                    var newTag = new Tag { Name = name, Description = "1" };
+                    AddTag(newTag);
+                }
+            }
+            var tagIds = new List<int>();
+            foreach (var name in tagNames)
+            {
+                var tag = _context.Tags.FirstOrDefault(t => t.Name == name);
+                if (tag != null)
+                {
+                    tagIds.Add(tag.TagId);
+                }
+            }
+            return tagIds;
+        }
+
 
     }
 }
