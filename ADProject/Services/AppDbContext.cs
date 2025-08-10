@@ -31,6 +31,8 @@ namespace ADProject.Services
         public DbSet<ChannelMessage> ChannelMessages { get; set; }
         public DbSet<ChannelRequest> channelRequest { get; set; }
 
+        public DbSet<InviteCode> inviteCodes { get; set; } // 添加 InviteCode DbSet
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // 表映射

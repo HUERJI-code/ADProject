@@ -68,7 +68,7 @@ namespace ADProject.Repositories
         {
             var user = _context.Users.FirstOrDefault(u => u.Email == userUpdateDto.Email);
             if (user is null) return "没有这个用户";
-            if(userUpdateDto.Name == user.Name)
+            if (userUpdateDto.Name == user.Name)
             {
                 user.PasswordHash = userUpdateDto.NewPasswordHash;
                 _context.SaveChanges();
@@ -135,6 +135,39 @@ namespace ADProject.Repositories
                 .OrderBy(_ => _rand.Next())
                 .Take(count)
                 .ToList();
+        }
+
+        public String GenerizeInviteCode()
+        {
+            var code = GenerateRandomCode();
+            while (_context.inviteCodes.Any(c => c.Code == code))
+            {
+                code = GenerateRandomCode();
+            }
+            var inviteCode = new InviteCode { Code = code, isUsed = false };
+            _context.inviteCodes.Add(inviteCode);
+            _context.SaveChanges();
+            return code;
+        }
+        private string GenerateRandomCode(int length = 8)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[_rand.Next(s.Length)]).ToArray());
+        }
+
+        public void UseInviteCode(string code)
+        {
+            var inviteCode = _context.inviteCodes.FirstOrDefault(c => c.Code == code);
+            if (inviteCode != null && !inviteCode.isUsed)
+            {
+                inviteCode.isUsed = true;
+                _context.SaveChanges();
+            }
+            else
+            {
+                throw new Exception("Invalid or already used invite code.");
+            }
         }
     }
 }

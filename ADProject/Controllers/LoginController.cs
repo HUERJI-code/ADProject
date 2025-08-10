@@ -29,7 +29,7 @@ namespace ADProject.Controllers
             {
                 return Unauthorized("用户名或邮箱不存在，或密码错误！");
             }
-            if(user.status != "active")
+            if (user.status != "active")
             {
                 return Unauthorized("User is banned");
             }
@@ -84,6 +84,38 @@ namespace ADProject.Controllers
         {
             // 健康检查接口
             return Ok(new { message = "API is healthy" });
+        }
+
+        [HttpGet("getInviteCode")]
+        public IActionResult GetInviteCode()
+        {
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(userType) || userType != "admin")
+            {
+                return Unauthorized("只有管理员可以获取邀请码");
+            }
+            // 获取邀请码
+            var inviteCode = _repository.GenerizeInviteCode();
+            if (inviteCode == null)
+            {
+                return NotFound("邀请码不存在");
+            }
+            return Ok(new { code = inviteCode });
+        }
+
+        [HttpGet("useInviteCode")]
+        public IActionResult UseInviteCode(string code)
+        {
+            // 使用邀请码
+            try
+            {
+                _repository.UseInviteCode(code);
+                return Ok(new { message = "邀请码使用成功" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }
