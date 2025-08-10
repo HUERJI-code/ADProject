@@ -267,6 +267,14 @@ namespace ADProject.Repositories
             report.Status = newStatus; // 例如："resolved", "rejected"
             report.ReviewedAt = DateTime.UtcNow;
 
+            var CreateSystemMessageDto = new CreateSystemMessageDto
+            {
+                Title = "频道举报审核结果",
+                Content = $"频道：{report.Channel.Name} 的举报已被 {newStatus}，举报人：{report.ReportedBy.Name}",
+                ReceiverId = report.ReportedById, // 通知申请人
+            };
+            _systemMessageRepository.Create(CreateSystemMessageDto);
+
             _context.SaveChanges();
         }
 

@@ -51,7 +51,8 @@ namespace ADProject.Controllers
                 top_k = 3
             };
             var response = await _httpClient.PostAsJsonAsync(
-            "http://127.0.0.1:8000/recommend/",
+            //"http://127.0.0.1:8000/recommend/",
+            "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/recommendUser/",
             payload
         );
 
@@ -108,7 +109,8 @@ namespace ADProject.Controllers
             }
             // 调用 FastAPI
             var response = await _httpClient.PostAsJsonAsync(
-                "http://localhost:8000/similar-users",
+                //"http://localhost:8000/similar-users",
+                "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/similar-users",
                 payload
             );
 

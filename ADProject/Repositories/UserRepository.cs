@@ -1,6 +1,7 @@
 ﻿using ADProject.Models;
 using ADProject.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace ADProject.Repositories
 {
@@ -8,10 +9,12 @@ namespace ADProject.Repositories
     {
         private readonly AppDbContext _context;
         private readonly Random _rand = new Random();
+        private readonly SystemMessageRepository _systemMessageRepository;
 
-        public UserRepository(AppDbContext context)
+        public UserRepository(AppDbContext context, SystemMessageRepository systemMessageRepository)
         {
             _context = context;
+            _systemMessageRepository = systemMessageRepository;
         }
 
         public IEnumerable<User> GetAll()
@@ -38,6 +41,21 @@ namespace ADProject.Repositories
         {
             _context.Users.Add(user);
             _context.SaveChanges();
+            _context.Users.FirstOrDefault(u => u.Name == user.Name);
+            if (user != null)
+            {
+                var CreateSystemMessageDto = new CreateSystemMessageDto
+                {
+                    Title = "新用户创建成功",
+                    Content = $"{user.Name} 成功创建了新账号",
+                    ReceiverId = user.UserId // 假设管理员ID为2
+                };
+                _systemMessageRepository.Create(CreateSystemMessageDto);
+            }
+            else
+            {
+                Debug.WriteLine("User creation failed.");
+            }
         }
 
         //public void Update(User user)

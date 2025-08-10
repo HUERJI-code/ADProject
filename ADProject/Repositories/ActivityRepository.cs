@@ -234,6 +234,13 @@ namespace ADProject.Repositories
                 if (!activity.RegisteredUsers.Any(u => u.UserId == request.UserId))
                 {
                     activity.RegisteredUsers.Add(request.User);
+                    var CreateSystemMessageDto = new CreateSystemMessageDto
+                    {
+                        Title = "注册申请通过",
+                        Content = $"{request.User.Name} 已成功注册活动：{activity.Title}",
+                        ReceiverId = request.User.UserId
+                    };
+                    _systemMessageRepository.Create(CreateSystemMessageDto);
                 }
             }
 
