@@ -11,8 +11,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Frontend", policy =>
     {
         policy.WithOrigins(
-                "http://localhost:3000"    // 本地 React
-                                           // 将来把你的前端正式域名也加进来，比如 "https://www.example.com"
+                "http://localhost:3000",    // 本地 React
+                "https://adproject-frontend-b0g8bhesaadqfsfq.southeastasia-01.azurewebsites.net"                           // 将来把你的前端正式域名也加进来，比如 "https://www.example.com"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
