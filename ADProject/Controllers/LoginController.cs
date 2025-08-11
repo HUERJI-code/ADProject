@@ -117,5 +117,13 @@ namespace ADProject.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("/test")]
+        public IActionResult Test()
+        {
+            return Ok(new { message = "Test endpoint is working" });
+        }
+
+
     }
 }
