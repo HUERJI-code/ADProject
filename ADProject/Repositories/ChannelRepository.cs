@@ -157,6 +157,7 @@ namespace ADProject.Repositories
                     Content = $"channel：{request.channel.Name} request has been {status}，requester：{request.User.Name}",
                     ReceiverId = request.User.UserId, // 通知申请人
                 };
+                _systemMessageRepository.Create(CreateSystemMessageDto);
             }
 
             _context.SaveChanges();

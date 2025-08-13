@@ -157,6 +157,7 @@ namespace ADProject.Repositories
                     Content = $"{request.Activity.Title} has been {newStatus}",
                     ReceiverId = request.Activity.Creator.UserId // 通知活动创建者
                 };
+                _systemMessageRepository.Create(CreateSystemMessageDto);
             }
 
             _context.SaveChanges();
