@@ -57,8 +57,8 @@ namespace ADProject.Repositories
             };
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "新channel申请",
-                Content = $"{user.Name} 创建了新cahnnel：{channel.Name} 描述为： {channel.description}",
+                Title = "new channel create request",
+                Content = $"{user.Name} create new channel：{channel.Name} description： {channel.description}",
                 ReceiverId = 1, // 假设 1 是管理员的 UserId
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
@@ -115,8 +115,8 @@ namespace ADProject.Repositories
             };
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "频道更新申请",
-                Content = $"{user.Name} 更新了频道：{channel.Name} 描述为： {channel.description}",
+                Title = "update channel information request",
+                Content = $"{user.Name} update information for channel：{channel.Name} description： {channel.description}",
                 ReceiverId = 1, // 假设 1 是管理员的 UserId
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
@@ -245,8 +245,8 @@ namespace ADProject.Repositories
 
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "新channel举报",
-                Content = $"{user.Name} 举报了cahnnel：{channel.Name} 原因为： {content}",
+                Title = "new channel report request",
+                Content = $"{user.Name} report cahnnel：{channel.Name} reason： {content}",
                 ReceiverId = 1, // 假设 1 是管理员的 UserId
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
@@ -269,8 +269,8 @@ namespace ADProject.Repositories
 
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "频道举报审核结果",
-                Content = $"频道：{report.Channel.Name} 的举报已被 {newStatus}，举报人：{report.ReportedBy.Name}",
+                Title = "channel report result",
+                Content = $"channel：{report.Channel.Name} report has been {newStatus}，reporter：{report.ReportedBy.Name}",
                 ReceiverId = report.ReportedById, // 通知申请人
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);

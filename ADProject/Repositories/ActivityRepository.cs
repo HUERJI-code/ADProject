@@ -64,8 +64,8 @@ namespace ADProject.Repositories
 
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "新活动申请",
-                Content = $"{user.Name} 创建了新活动：{activity.Title} 描述为： {activity.Description}",
+                Title = "New Activity Create Request",
+                Content = $"{user.Name} create new activity：{activity.Title} description： {activity.Description}",
                 ReceiverId = 1 // 假设管理员ID为2
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
@@ -125,8 +125,8 @@ namespace ADProject.Repositories
 
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "活动信息修改",
-                Content = $"{activity.Creator.Name} 创建了新活动：{activity.Title} 描述为： {activity.Description}",
+                Title = "update activity information",
+                Content = $"{activity.Creator.Name} update activity：{activity.Title} description： {activity.Description}",
                 ReceiverId = 1 // 假设管理员ID为2
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
@@ -186,8 +186,8 @@ namespace ADProject.Repositories
 
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "新用户申请活动",
-                Content = $"{username} 申请注册活动：{activity.Title}",
+                Title = "user sign for activity",
+                Content = $"{username} sign for activity：{activity.Title}",
                 ReceiverId = activity.Creator.UserId // 假设管理员ID为2
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
@@ -236,12 +236,23 @@ namespace ADProject.Repositories
                     activity.RegisteredUsers.Add(request.User);
                     var CreateSystemMessageDto = new CreateSystemMessageDto
                     {
-                        Title = "注册申请通过",
-                        Content = $"{request.User.Name} 已成功注册活动：{activity.Title}",
+                        Title = "your sign for activity has been approved",
+                        Content = $"{request.User.Name} sign for：{activity.Title} has been approved",
                         ReceiverId = request.User.UserId
                     };
                     _systemMessageRepository.Create(CreateSystemMessageDto);
                 }
+            }
+
+            if(decisionStatus == "rejected")
+            {
+                var CreateSystemMessageDto = new CreateSystemMessageDto
+                {
+                    Title = "your sign for activity has been rejected",
+                    Content = $"{request.User.Name} sign for：{request.Activity.Title} has been rejected",
+                    ReceiverId = request.User.UserId
+                };
+                _systemMessageRepository.Create(CreateSystemMessageDto);
             }
 
             _context.SaveChanges();
@@ -469,8 +480,8 @@ namespace ADProject.Repositories
             {
                 var createSystemMessageDto = new CreateSystemMessageDto
                 {
-                    Title = "注册申请取消",
-                    Content = $"{user.Name} 已取消对活动 {activity.Title} 的注册申请。",
+                    Title = "cancel registion request",
+                    Content = $"{user.Name} cancel registion for {activity.Title} ",
                     ReceiverId = user.UserId
                 };
                 _systemMessageRepository.Create(createSystemMessageDto);
@@ -542,8 +553,8 @@ namespace ADProject.Repositories
             {
                 var userMessage = new CreateSystemMessageDto
                 {
-                    Title = "活动取消通知",
-                    Content = $"{activity.Title} 活动已被取消。",
+                    Title = "activity has been cancelled",
+                    Content = $"{activity.Title} has been cancelled。",
                     ReceiverId = user.UserId // 通知所有注册用户
                 };
                 _systemMessageRepository.Create(userMessage);

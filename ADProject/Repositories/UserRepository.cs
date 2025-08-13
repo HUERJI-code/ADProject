@@ -46,9 +46,9 @@ namespace ADProject.Repositories
             {
                 var CreateSystemMessageDto = new CreateSystemMessageDto
                 {
-                    Title = "新用户创建成功",
-                    Content = $"{user.Name} 成功创建了新账号",
-                    ReceiverId = user.UserId // 假设管理员ID为2
+                    Title = "create new user successfully",
+                    Content = $"{user.Name} create new user account successfully",
+                    ReceiverId = user.UserId 
                 };
                 _systemMessageRepository.Create(CreateSystemMessageDto);
             }
