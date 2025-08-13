@@ -151,6 +151,12 @@ namespace ADProject.Repositories
             if (newStatus == "approved" || newStatus == "rejected")
             {
                 request.Activity.Status = newStatus;
+                var CreateSystemMessageDto = new CreateSystemMessageDto
+                {
+                    Title = "activity request review result",
+                    Content = $"{request.Activity.Title} has been {newStatus}",
+                    ReceiverId = request.Activity.Creator.UserId // 通知活动创建者
+                };
             }
 
             _context.SaveChanges();

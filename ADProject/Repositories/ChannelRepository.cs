@@ -151,6 +151,12 @@ namespace ADProject.Repositories
             if (status == "approved" || status == "rejected" || status == "banned")
             {
                 request.channel.status = status; // 更新频道状态为 approved
+                var CreateSystemMessageDto = new CreateSystemMessageDto
+                {
+                    Title = "channel request result",
+                    Content = $"channel：{request.channel.Name} request has been {status}，requester：{request.User.Name}",
+                    ReceiverId = request.User.UserId, // 通知申请人
+                };
             }
 
             _context.SaveChanges();
