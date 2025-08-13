@@ -161,7 +161,7 @@ namespace ADProject.Controllers
         public async Task<IActionResult> RetrainModel()
         {
             // 调用 FastAPI 的 retrain endpoint
-            var response = await _httpClient.GetAsync("https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/retrain/");
+            var response = await _httpClient.GetAsync("https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/TrainRecommender/");
             if (!response.IsSuccessStatusCode)
             {
                 return StatusCode((int)response.StatusCode, "Failed to retrain model");
