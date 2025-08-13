@@ -50,7 +50,7 @@ namespace ADProject.Controllers
             var payload = new
             {
                 user_id = userId,
-                top_k = 3
+                top_k = 5
             };
             var response = await _httpClient.PostAsJsonAsync(
             //"http://127.0.0.1:8000/recommend/",
@@ -95,7 +95,7 @@ namespace ADProject.Controllers
             var payload = new
             {
                 user_id = userId,
-                top_k = 3
+                top_k = 5
             };
             if( user == null)
             {
