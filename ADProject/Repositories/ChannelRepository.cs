@@ -378,5 +378,14 @@ namespace ADProject.Repositories
             channel.Members.Remove(user);
             _context.SaveChanges();
         }
+
+        public void cancelChannel(int channelId)
+        {
+            var channel = _context.Channels.FirstOrDefault(c => c.ChannelId == channelId);
+            if (channel == null)
+                throw new Exception("频道不存在");
+            channel.status = "cancelled"; // 将频道状态设置为 cancelled
+            _context.SaveChanges();
+        }
     }
 }

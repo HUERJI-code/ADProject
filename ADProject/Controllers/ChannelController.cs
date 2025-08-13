@@ -354,6 +354,26 @@ namespace ADProject.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpDelete("/cancelChannel")]
+        public IActionResult CancelChannel(int channelId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("unlogin user！");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (userType != "organizer")
+                return BadRequest("only organizer can cancel channel");
+            try
+            {
+                _repository.cancelChannel(channelId);
+                return Ok("channel has been cancelled");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }
 

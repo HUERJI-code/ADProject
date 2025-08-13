@@ -523,5 +523,51 @@ namespace ADProject.Repositories
 
 
         }
+
+        public void cancelActivity(int activityId)
+        {
+            var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
+            if (activity == null)
+                throw new Exception("活动不存在");
+            activity.Status = "cancelled"; // 将活动状态设置为取消
+            var CreateSystemMessageDto = new CreateSystemMessageDto
+            {
+                Title = "活动取消通知",
+                Content = $"{activity.Title} 活动已被取消。",
+                ReceiverId = activity.Creator.UserId // 通知活动创建者
+            };
+            _systemMessageRepository.Create(CreateSystemMessageDto);
+            _context.SaveChanges();
+            foreach (var user in activity.RegisteredUsers)
+            {
+                var userMessage = new CreateSystemMessageDto
+                {
+                    Title = "活动取消通知",
+                    Content = $"{activity.Title} 活动已被取消。",
+                    ReceiverId = user.UserId // 通知所有注册用户
+                };
+                _systemMessageRepository.Create(userMessage);
+            }
+            // 清除注册用户列表
+            activity.RegisteredUsers.Clear();
+            // 清除收藏用户列表
+            activity.FavouritedByUsers.Clear();
+            // 清除活动申请列表
+            var requests = _context.ActivityRegistrationRequests
+                .Where(r => r.ActivityId == activityId).ToList();
+            foreach (var request in requests)
+                {
+                _context.ActivityRegistrationRequests.Remove(request);
+            }
+            // 清除活动请求列表
+            var activityRequests = _context.ActivityRequest
+                .Where(r => r.ActivityId == activityId).ToList();
+            foreach (var activityRequest in activityRequests)
+                {
+                _context.ActivityRequest.Remove(activityRequest);
+            }
+            // 保存更改
+            _context.SaveChanges();
+        }
     }
 }

@@ -414,5 +414,25 @@ namespace ADProject.Controllers
             }
         }
 
+        [HttpDelete("/cancleActivity")]
+        public IActionResult CancelActivity(int activityId)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            var userType = HttpContext.Session.GetString("UserType");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("unlogin user！");
+            if (userType != "organizer")
+                return BadRequest("only organizer and admin can cancel activity");
+            try
+            {
+                _repository.cancelActivity(activityId);
+                return Ok("activity has been cancelled");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
