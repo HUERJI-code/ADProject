@@ -550,8 +550,8 @@ namespace ADProject.Repositories
             activity.Status = "cancelled"; // 将活动状态设置为取消
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "活动取消通知",
-                Content = $"{activity.Title} 活动已被取消。",
+                Title = "activity has been cancelled",
+                Content = $"{activity.Title} has been cancelled。",
                 ReceiverId = activity.Creator.UserId // 通知活动创建者
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
