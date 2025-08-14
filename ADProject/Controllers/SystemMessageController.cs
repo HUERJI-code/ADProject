@@ -43,11 +43,12 @@ namespace ADProject.Controllers
         [HttpPost("create")]
         public IActionResult Create(CreateSystemMessageDto createSystemMessageDto)
         {
-            if (createSystemMessageDto == null)
-                return BadRequest("消息内容不能为空");
+            
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("未登录用户，无法创建消息");
+            if (createSystemMessageDto == null)
+                return BadRequest("消息内容不能为空");
             try
             {
                 _repository.Create(createSystemMessageDto);
