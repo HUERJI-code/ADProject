@@ -20,69 +20,67 @@ namespace ADProject.Controllers
         {
             var identifier = loginDto.Identifier?.Trim();
 
-            // 查找用户：邮箱或用户名
+            // Find user by email or username
             var user = _repository.GetAll().FirstOrDefault(u =>
                 (u.Email == identifier || u.Name == identifier) &&
                 u.PasswordHash == loginDto.PasswordHash);
 
             if (user is null)
             {
-                return Unauthorized("用户名或邮箱不存在，或密码错误！");
+                return Unauthorized("Username or email does not exist, or password is incorrect");
             }
             if (user.status != "active")
             {
                 return Unauthorized("User is banned");
             }
 
-            // 写入会话
+            // Write to session
             HttpContext.Session.SetString("Username", user.Name);
             HttpContext.Session.SetString("UserType", user.Role);
 
             return Ok(new
             {
-                message = "登录成功",
+                message = "Login successful",
                 username = user.Name
             });
         }
 
-
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            // 清除 Session
+            // Clear session
             HttpContext.Session.Clear();
-            return Ok(new { message = "已登出！" });
+            return Ok(new { message = "Logged out successfully" });
         }
 
         [HttpGet("check")]
         public IActionResult CheckLogin()
         {
-            // 检查 Session 中是否有用户名
+            // Check if username exists in session
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
             {
-                return Unauthorized("未登录！");
+                return Unauthorized("Not logged in");
             }
-            return Ok(new { message = "已登录", username });
+            return Ok(new { message = "Logged in", username });
         }
 
         [HttpGet("/checkLoginUserType")]
         public IActionResult CheckLoginUserType()
         {
-            // 检查 Session 中是否有用户类型
+            // Check if user type exists in session
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(userType))
             {
-                return Unauthorized("未登录！");
+                return Unauthorized("Not logged in");
             }
-            return Ok(new { message = "已登录", userType });
-
+            return Ok(new { message = "Logged in", userType });
         }
 
         [HttpGet("/health")]
         public IActionResult HealthCheck()
         {
-            // 健康检查接口
+            // Health check endpoint
             return Ok(new { message = "API is healthy" });
         }
 
@@ -92,13 +90,13 @@ namespace ADProject.Controllers
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(userType) || userType != "admin")
             {
-                return Unauthorized("只有管理员可以获取邀请码");
+                return Unauthorized("Only admin can get invite code");
             }
-            // 获取邀请码
+            // Get invite code
             var inviteCode = _repository.GenerizeInviteCode();
             if (inviteCode == null)
             {
-                return NotFound("邀请码不存在");
+                return NotFound("Invite code does not exist");
             }
             return Ok(new { code = inviteCode });
         }
@@ -106,11 +104,11 @@ namespace ADProject.Controllers
         [HttpGet("useInviteCode")]
         public IActionResult UseInviteCode(string code)
         {
-            // 使用邀请码
+            // Use invite code
             try
             {
                 _repository.UseInviteCode(code);
-                return Ok(new { message = "邀请码使用成功" });
+                return Ok(new { message = "Invite code used successfully" });
             }
             catch (Exception ex)
             {
@@ -123,7 +121,5 @@ namespace ADProject.Controllers
         {
             return Ok(new { message = "Test endpoint is working" });
         }
-
-
     }
 }

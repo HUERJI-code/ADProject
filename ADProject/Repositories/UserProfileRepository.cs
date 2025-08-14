@@ -26,7 +26,7 @@ namespace ADProject.Repositories
         {
             var user = _context.Users
                 .Include(u => u.Profile)
-                .ThenInclude(p => p.Tags) // 加载标签
+                .ThenInclude(p => p.Tags) // Load tags
                 .FirstOrDefault(u => u.Name == username);
 
             return user?.Profile;
@@ -41,7 +41,7 @@ namespace ADProject.Repositories
                 .FirstOrDefault(u => u.Name == username);
 
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
 
             var tagEntities = GetTagsByIds(dto.TagIds ?? new List<int>());
 
@@ -54,8 +54,8 @@ namespace ADProject.Repositories
                     Gender = dto.Gender,
                     Tags = tagEntities,
                     UserId = user.UserId,
-                    User = user, // 关联用户
-                    url = dto.Url // 确保 URL 不为 null
+                    User = user, // Associate with user
+                    url = dto.Url // Ensure URL is not null
                 };
 
                 _context.UserProfiles.Add(newProfile);
@@ -64,27 +64,26 @@ namespace ADProject.Repositories
             }
             else
             {
-
                 var existingProfile = user.Profile;
                 existingProfile.Age = dto.Age;
-                if(dto.Url != null) existingProfile.url = dto.Url;
+                if (dto.Url != null) existingProfile.url = dto.Url;
                 existingProfile.Gender = dto.Gender;
-                Console.WriteLine($"更新用户 {username} 的个人资料");
-                existingProfile.Tags.Clear(); // 清除原有绑定
+                Console.WriteLine($"Updating profile for user {username}");
+                existingProfile.Tags.Clear(); // Clear existing bindings
                 existingProfile.Tags = tagEntities;
             }
 
             try
             {
                 _context.SaveChanges();
-                if(a == 1)
+                if (a == 1)
                 {
-                    Console.WriteLine($"创建用户 {username} 的个人资料");
+                    Console.WriteLine($"Created profile for user {username}");
                     RetrainModelAsync().Wait();
                 }
                 else
                 {
-                    Console.WriteLine($"更新用户 {username} 的个人资料");
+                    Console.WriteLine($"Updated profile for user {username}");
                 }
             }
             catch (Exception ex)
@@ -92,9 +91,7 @@ namespace ADProject.Repositories
                 Console.WriteLine(ex.InnerException?.Message);
                 throw;
             }
-
         }
-
 
         public List<Tag> GetTagsByIds(List<int> tagIds)
         {

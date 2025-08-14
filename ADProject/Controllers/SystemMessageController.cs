@@ -14,12 +14,14 @@ namespace ADProject.Controllers
         {
             _repository = repository;
         }
+
         [HttpGet("all")]
         public IActionResult GetAll()
         {
             var messages = _repository.GetAll();
             return Ok(messages);
         }
+
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
@@ -28,35 +30,35 @@ namespace ADProject.Controllers
                 return NotFound();
             return Ok(message);
         }
+
         [HttpGet("/getLoginUserMessage")]
         public IActionResult GetByUserName()
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户，无法获取消息");
+                return Unauthorized("Unauthenticated user, unable to retrieve messages");
             var messages = _repository.GetByUserName(username);
             if (messages == null || !messages.Any())
-                return NotFound("没有找到相关消息");
+                return NotFound("No related messages found");
             return Ok(messages);
         }
 
         [HttpPost("create")]
         public IActionResult Create(CreateSystemMessageDto createSystemMessageDto)
         {
-            
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户，无法创建消息");
+                return Unauthorized("Unauthenticated user, unable to create message");
             if (createSystemMessageDto == null)
-                return BadRequest("消息内容不能为空");
+                return BadRequest("Message content cannot be empty");
             try
             {
                 _repository.Create(createSystemMessageDto);
-                return Ok("消息创建成功");
+                return Ok("Message created successfully");
             }
             catch (Exception ex)
             {
-                return BadRequest($"创建消息失败: {ex.Message}");
+                return BadRequest($"Failed to create message: {ex.Message}");
             }
         }
 
@@ -64,33 +66,33 @@ namespace ADProject.Controllers
         public IActionResult MarkAsRead(List<int> ids)
         {
             if (ids == null || !ids.Any())
-                return BadRequest("消息ID列表不能为空");
+                return BadRequest("Message ID list cannot be empty");
             try
             {
                 foreach (var id in ids)
                 {
                     _repository.MarkAsRead(id);
                 }
-                return Ok("消息已标记为已读");
+                return Ok("Messages marked as read");
             }
             catch (Exception ex)
             {
-                return BadRequest($"标记消息为已读失败: {ex.Message}");
+                return BadRequest($"Failed to mark messages as read: {ex.Message}");
             }
         }
+
         [HttpPost("/MarkAsRead/{id}")]
         public IActionResult MarkAsRead(int id)
         {
             try
             {
                 _repository.MarkAsRead(id);
-                return Ok("消息已标记为已读");
+                return Ok("Message marked as read");
             }
             catch (Exception ex)
             {
-                return BadRequest($"标记消息为已读失败: {ex.Message}");
+                return BadRequest($"Failed to mark message as read: {ex.Message}");
             }
-
         }
     }
 }

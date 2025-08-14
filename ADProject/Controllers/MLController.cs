@@ -1,10 +1,7 @@
 ﻿using ADProject.Models;
 using ADProject.Repositories;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
 using System.Text.Json.Serialization;
-
 
 namespace ADProject.Controllers
 {
@@ -53,17 +50,17 @@ namespace ADProject.Controllers
                 top_k = 5
             };
             var response = await _httpClient.PostAsJsonAsync(
-            //"http://127.0.0.1:8000/recommend/",
-            "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/recommendActivity/",
-            payload
-        );
+                //"http://127.0.0.1:8000/recommend/",
+                "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/recommendActivity/",
+                payload
+            );
 
             if (!response.IsSuccessStatusCode)
             {
                 return StatusCode((int)response.StatusCode, "Failed to fetch recommendations");
             }
 
-            // 反序列化返回的 JSON
+            // Deserialize JSON response
             var result = await response.Content.ReadFromJsonAsync<RecommendResponse>();
 
             if (result?.RecommendedActivityIds == null)
@@ -71,7 +68,7 @@ namespace ADProject.Controllers
                 return BadRequest("Invalid response from recommendation service");
             }
 
-            // 只返回 List<int>
+            // Only return List<int>
             return Ok(result.RecommendedActivityIds);
         }
 
@@ -84,7 +81,7 @@ namespace ADProject.Controllers
         [HttpPost("/similar-users")]
         public async Task<ActionResult<SimilarUsersListResponse>> SimilarUsers()
         {
-            // 构造要发给 FastAPI 的 JSON
+            // Construct JSON to send to FastAPI
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
             {
@@ -97,7 +94,7 @@ namespace ADProject.Controllers
                 user_id = userId,
                 top_k = 5
             };
-            if( user == null)
+            if (user == null)
             {
                 return NotFound("User not found.");
             }
@@ -109,7 +106,7 @@ namespace ADProject.Controllers
             {
                 return Ok(_userRepository.GetRandomUsers());
             }
-            // 调用 FastAPI
+            // Call FastAPI
             var response = await _httpClient.PostAsJsonAsync(
                 //"http://localhost:8000/similar-users",
                 "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/recommendUser/",
@@ -119,20 +116,20 @@ namespace ADProject.Controllers
             if (!response.IsSuccessStatusCode)
                 return StatusCode((int)response.StatusCode, "Failed to fetch similar users");
 
-            // 反序列化 FastAPI 的原始返回
+            // Deserialize FastAPI response
             var serviceResult = await response.Content
                 .ReadFromJsonAsync<SimilarUsersServiceResponse>();
 
             if (serviceResult?.SimilarUsers == null)
                 return BadRequest("Invalid response from similar-users service");
 
-            // 提取纯 int 列表
+            // Extract list of user IDs
             var ids = serviceResult.SimilarUsers
                 .Select(x => x.UserId)
                 .ToList();
 
-            // 返回最终格式
-            return Ok(ids );
+            // Return final result
+            return Ok(ids);
         }
 
         public class SimilarUsersListResponse
@@ -150,7 +147,7 @@ namespace ADProject.Controllers
             public List<SimilarUserItem> SimilarUsers { get; set; }
         }
 
-        // FastAPI 那边数组里，每个元素形如 { "user_id": 11 }
+        // Each element from FastAPI is like { "user_id": 11 }
         private class SimilarUserItem
         {
             [JsonPropertyName("user_id")]
@@ -160,13 +157,13 @@ namespace ADProject.Controllers
         [HttpGet("/retrainModel")]
         public async Task<IActionResult> RetrainModel()
         {
-            // 调用 FastAPI 的 retrain endpoint
+            // Call FastAPI retrain endpoint
             var response = await _httpClient.GetAsync("https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/TrainRecommender/");
             if (!response.IsSuccessStatusCode)
             {
                 return StatusCode((int)response.StatusCode, "Failed to retrain model");
             }
-            // 返回成功消息
+            // Return success message
             return Ok("Model retrained successfully");
         }
 
@@ -177,7 +174,7 @@ namespace ADProject.Controllers
             {
                 return BadRequest("Invalid request data");
             }
-            // 调用 FastAPI 的 predict_tags endpoint
+            // Call FastAPI predict_tags endpoint
             var response = await _httpClient.PostAsJsonAsync(
                 "https://adprojectml-c6g5egcpbkfkfqcn.southeastasia-01.azurewebsites.net/predictTags/",
                 request
@@ -186,7 +183,7 @@ namespace ADProject.Controllers
             {
                 return StatusCode((int)response.StatusCode, "Failed to predict tags");
             }
-            // 反序列化返回的 JSON
+            // Deserialize JSON response
             var result = await response.Content.ReadFromJsonAsync<PredictTagsResponse>();
             if (result?.Tags == null)
             {
@@ -210,6 +207,5 @@ namespace ADProject.Controllers
             [JsonPropertyName("predicted_tags")]
             public List<string> Tags { get; set; }
         }
-
     }
 }

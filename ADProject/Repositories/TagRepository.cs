@@ -38,7 +38,7 @@ namespace ADProject.Repositories
         public void AddTag(Tag tag)
         {
             _context.Tags.Add(tag);
-            _context.SaveChanges();                    // 保存数据库变更
+            _context.SaveChanges();                   
         }
 
         public bool TagExists(string name)

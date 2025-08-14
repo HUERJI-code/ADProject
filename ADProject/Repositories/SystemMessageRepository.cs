@@ -11,10 +11,12 @@ namespace ADProject.Repositories
         {
             _context = context;
         }
+
         public List<SystemMessage> GetAll()
         {
             return _context.SystemMessages.ToList();
         }
+
         public SystemMessage GetById(int id)
         {
             return _context.SystemMessages.FirstOrDefault(m => m.Id == id);
@@ -35,13 +37,13 @@ namespace ADProject.Repositories
         {
             var receiver = _context.Users.FirstOrDefault(u => u.UserId == createSystemMessageDto.ReceiverId);
             if (receiver == null)
-                throw new Exception("接收者不存在");
+                throw new Exception("Receiver does not exist");
             var systemMessage = new SystemMessage
             {
                 Title = createSystemMessageDto.Title,
                 Content = createSystemMessageDto.Content,
                 Receiver = receiver,
-                IsRead = false, // 默认未读
+                IsRead = false, // Default unread
                 ReceiverId = receiver.UserId,
                 SentAt = DateTime.UtcNow
             };
@@ -53,7 +55,7 @@ namespace ADProject.Repositories
         {
             var message = _context.SystemMessages.FirstOrDefault(m => m.Id == id);
             if (message == null)
-                throw new Exception("消息不存在");
+                throw new Exception("Message does not exist");
             message.IsRead = true;
             _context.SaveChanges();
         }

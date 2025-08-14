@@ -67,16 +67,16 @@ namespace ADProject.Repositories
         public string Update(UserUpdateDto userUpdateDto)
         {
             var user = _context.Users.FirstOrDefault(u => u.Email == userUpdateDto.Email);
-            if (user is null) return "没有这个用户";
+            if (user is null) return "No such user";
             if (userUpdateDto.Name == user.Name)
             {
                 user.PasswordHash = userUpdateDto.NewPasswordHash;
                 _context.SaveChanges();
-                return "密码重置成功";
+                return "Password reset successfully";
             }
             else
             {
-                return "信息匹配错误";
+                return "Information mismatch";
             }
 
         }

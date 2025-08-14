@@ -23,13 +23,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户，无法创建活动");
+                return Unauthorized("Unauthenticated user, unable to create activity");
             if (userType != "organizer")
-                return BadRequest("只有组织者可以创建活动");
+                return BadRequest("Only organizers can create activities");
             try
             {
                 _repository.CreateActivityWithRegistration(username, dto);
-                return Ok(new { message = "活动已创建并自动注册成功", dto });
+                return Ok(new { message = "Activity has been created and automatically registered successfully", dto });
             }
             catch (Exception ex)
             {
@@ -58,7 +58,7 @@ namespace ADProject.Controllers
             try
             {
                 _repository.UpdateActivity(activityId, dto);
-                return Ok(new { message = "活动更新成功。" });
+                return Ok(new { message = "Activity updated successfully" });
             }
             catch (Exception ex)
             {
@@ -72,13 +72,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有admin可以审批活动申请");
+                return BadRequest("Only admin can approve activity requests");
             try
             {
                 _repository.ApproveActivityRequest(requestId, status);
-                return Ok(new { message = $"申请已更新为 {status}" });
+                return Ok(new { message = $"Request has been updated to {status}" });
             }
             catch (Exception ex)
             {
@@ -89,15 +89,13 @@ namespace ADProject.Controllers
         [HttpPost("register/{activityId}")]
         public IActionResult RegisterForActivity(int activityId)
         {
-
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
-
+                return Unauthorized("Unauthenticated user");
             try
             {
                 _repository.RegisterForActivity(username, activityId);
-                return Ok("申请已提交");
+                return Ok("Application submitted");
             }
             catch (Exception ex)
             {
@@ -111,13 +109,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "organizer")
-                return BadRequest("只有组织者可以审批用户注册申请");
+                return BadRequest("Only organizers can review user registration requests");
             try
             {
                 _repository.ReviewRegistrationRequest(requestId, status);
-                return Ok("审核已完成");
+                return Ok("Review completed");
             }
             catch (Exception ex)
             {
@@ -144,12 +142,11 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录");
-
+                return Unauthorized("Unauthenticated user");
             try
             {
                 _repository.AddToFavourites(username, activityId);
-                return Ok("已成功收藏该活动");
+                return Ok("Activity added to favourites successfully");
             }
             catch (Exception ex)
             {
@@ -162,12 +159,11 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录");
-
+                return Unauthorized("Unauthenticated user");
             try
             {
                 _repository.RemoveFromFavourites(username, activityId);
-                return Ok("已取消收藏");
+                return Ok("Activity removed from favourites");
             }
             catch (Exception ex)
             {
@@ -180,8 +176,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "未登录用户" });
-
+                return Unauthorized(new { message = "Unauthenticated user" });
             try
             {
                 var activities = _repository.GetFavouriteActivitiesByUsername(username);
@@ -198,8 +193,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "未登录用户" });
-
+                return Unauthorized(new { message = "Unauthenticated user" });
             try
             {
                 var activities = _repository.GetRegisteredActivitiesByUsername(username);
@@ -216,7 +210,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "未登录用户" });
+                return Unauthorized(new { message = "Unauthenticated user" });
             try
             {
                 var activities = _repository.GetRegisteredActivitiesByUserId(userId);
@@ -234,9 +228,9 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "未登录用户" });
+                return Unauthorized(new { message = "Unauthenticated user" });
             if (userType != "organizer")
-                return BadRequest(new { message = "只有组织者可以查看自己的活动" });
+                return BadRequest(new { message = "Only organizers can view their own activities" });
             try
             {
                 var activities = _repository.GetLoginOrganizerActivities(username);
@@ -246,7 +240,6 @@ namespace ADProject.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
-
         }
 
         [HttpGet("/getOrganizerActivityRegisterRequest")]
@@ -255,9 +248,9 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "未登录用户" });
+                return Unauthorized(new { message = "Unauthenticated user" });
             if (userType != "organizer")
-                return BadRequest(new { message = "只有组织者可以查看注册申请" });
+                return BadRequest(new { message = "Only organizers can view registration requests" });
             try
             {
                 var activities = _repository.GetOrganizerRegistrationRequests(username);
@@ -274,7 +267,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "未登录用户" });
+                return Unauthorized(new { message = "Unauthenticated user" });
             try
             {
                 int count = _repository.GetActivityCountByActivityId(activityId);
@@ -292,13 +285,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有管理员可以禁用活动");
+                return BadRequest("Only admin can ban activities");
             try
             {
                 _repository.banActivity(activityId);
-                return Ok(new { message = "活动已被禁用" });
+                return Ok(new { message = "Activity has been banned" });
             }
             catch (Exception ex)
             {
@@ -312,13 +305,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有管理员可以启用活动");
+                return BadRequest("Only admin can unban activities");
             try
             {
                 _repository.UnbanActivity(activityId);
-                return Ok(new { message = "活动已被启用" });
+                return Ok(new { message = "Activity has been unbanned" });
             }
             catch (Exception ex)
             {
@@ -332,9 +325,9 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有管理员可以查看所有活动申请");
+                return BadRequest("Only admin can view all activity requests");
             try
             {
                 var requests = _repository.GetAllActivityRequests();
@@ -347,11 +340,11 @@ namespace ADProject.Controllers
         }
 
         [HttpGet("/checkRegisterStatus")]
-        public string checkRegisterStatus(int  activityId)
+        public string checkRegisterStatus(int activityId)
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return("未登录用户！");
+                return "Unauthenticated user";
             try
             {
                 var message = _repository.checkRegisterStatus(username, activityId);
@@ -359,7 +352,7 @@ namespace ADProject.Controllers
             }
             catch (Exception ex)
             {
-                return(ex.Message );
+                return ex.Message;
             }
         }
 
@@ -368,7 +361,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "未登录用户" });
+                return Unauthorized(new { message = "Unauthenticated user" });
             try
             {
                 var requests = _repository.checkMyRegistrationRequests(username);
@@ -385,11 +378,11 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             try
             {
                 _repository.CancelRegistrationRequest(activityId, username);
-                return Ok("已取消注册");
+                return Ok("Registration cancelled");
             }
             catch (Exception ex)
             {
@@ -402,7 +395,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "未登录用户" });
+                return Unauthorized(new { message = "Unauthenticated user" });
             try
             {
                 var activities = _repository.GetFavouriteByUserId(userId);
@@ -420,19 +413,18 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("unlogin user！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "organizer")
-                return BadRequest("only organizer and admin can cancel activity");
+                return BadRequest("Only organizer and admin can cancel activity");
             try
             {
                 _repository.cancelActivity(activityId);
-                return Ok("activity has been cancelled");
+                return Ok("Activity has been cancelled");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-
     }
 }

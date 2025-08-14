@@ -20,19 +20,19 @@ namespace ADProject.Repositories
         {
             var user = _context.Users.FirstOrDefault(u => u.Name == username);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
 
             var existingActivity = _context.Activities
                 .FirstOrDefault(a => a.Title == dto.Title);
 
             if (existingActivity != null)
-                throw new Exception("已有同名活动，请更换标题。");
+                throw new Exception("An activity with the same name already exists, please change the title.");
 
             var tagEntities = _context.Tags
                 .Where(t => dto.TagIds.Contains(t.TagId))
                 .ToList();
 
-            Console.WriteLine($"创建活动 {dto.Title} 的用户 {tagEntities.Count}");
+            Console.WriteLine($"Creating activity {dto.Title} by user {tagEntities.Count}");
 
             var activity = new Activity
             {
@@ -44,7 +44,7 @@ namespace ADProject.Repositories
                 CreatedBy = user.UserId,
                 Creator = user,
                 number = dto.number,
-                Url = dto.Url ?? string.Empty, // 如果没有链接则默认为空
+                Url = dto.Url ?? string.Empty, // Default to empty if no URL provided
                 Tags = tagEntities
             };
 
@@ -65,8 +65,8 @@ namespace ADProject.Repositories
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
                 Title = "New Activity Create Request",
-                Content = $"{user.Name} create new activity：{activity.Title} description： {activity.Description}",
-                ReceiverId = 1 // 假设管理员ID为2
+                Content = $"{user.Name} created a new activity: {activity.Title} description: {activity.Description}",
+                ReceiverId = 1 // Assume admin ID is 2
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
 
@@ -82,16 +82,14 @@ namespace ADProject.Repositories
 
         }
 
-
         public Activity GetById(int id) => _context.Activities.Find(id);
         public List<Activity> GetAll() => _context.Activities.ToList();
-
 
         public void UpdateActivity(int activityId, UpdateActivityDto dto)
         {
             var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                throw new Exception("活动不存在");
+                throw new Exception("Activity does not exist");
 
             activity.Title = dto.Title;
             activity.Description = dto.Description;
@@ -99,13 +97,13 @@ namespace ADProject.Repositories
             activity.StartTime = dto.StartTime;
             activity.EndTime = dto.EndTime;
             activity.number = dto.number;
-            activity.Url = dto.Url ?? string.Empty; // 如果没有链接则默认为空
-            activity.Status = "pending"; // 保持原有状态，除非提供了新的状态
+            activity.Url = dto.Url ?? string.Empty; // Default to empty if no URL provided
+            activity.Status = "pending"; // Keep original status unless a new status is provided
 
             var update = new ActivityRequest
             {
                 ActivityId = activity.ActivityId,
-                ReviewedById = 1, // 假设管理员ID为2
+                ReviewedById = 1, // Assume admin ID is 2
                 Status = "pending",
                 RequestedAt = DateTime.UtcNow,
                 requestType = "updateActivity",
@@ -119,15 +117,15 @@ namespace ADProject.Repositories
                 var tagEntities = _context.Tags
                     .Where(t => dto.TagIds.Contains(t.TagId))
                     .ToList();
-                activity.Tags.Clear(); // 清除原有绑定
+                activity.Tags.Clear(); // Clear original tags
                 activity.Tags = tagEntities;
             }
 
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "update activity information",
-                Content = $"{activity.Creator.Name} update activity：{activity.Title} description： {activity.Description}",
-                ReceiverId = 1 // 假设管理员ID为2
+                Title = "Update activity information",
+                Content = $"{activity.Creator.Name} updated activity: {activity.Title} description: {activity.Description}",
+                ReceiverId = 1 // Assume admin ID is 2
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
 
@@ -141,21 +139,19 @@ namespace ADProject.Repositories
                 .FirstOrDefault(r => r.Id == requestId);
 
             if (request == null)
-                throw new Exception("活动申请记录不存在");
+                throw new Exception("Activity request record does not exist");
 
-            // 更新申请状态
             request.Status = newStatus;
             request.ReviewedAt = DateTime.UtcNow;
 
-            // 如果是审批通过或拒绝，则更新对应活动状态
             if (newStatus == "approved" || newStatus == "rejected")
             {
                 request.Activity.Status = newStatus;
                 var CreateSystemMessageDto = new CreateSystemMessageDto
                 {
-                    Title = "activity request review result",
+                    Title = "Activity request review result",
                     Content = $"{request.Activity.Title} has been {newStatus}",
-                    ReceiverId = request.Activity.Creator.UserId // 通知活动创建者
+                    ReceiverId = request.Activity.Creator.UserId
                 };
                 _systemMessageRepository.Create(CreateSystemMessageDto);
             }
@@ -167,16 +163,16 @@ namespace ADProject.Repositories
         {
             var user = _context.Users.FirstOrDefault(u => u.Name == username);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
 
             var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                throw new Exception("活动不存在");
+                throw new Exception("Activity does not exist");
 
             var existingRequest = _context.ActivityRegistrationRequests
                 .FirstOrDefault(r => r.UserId == user.UserId && r.ActivityId == activityId);
             if (existingRequest != null)
-                throw new Exception("已提交过申请或已注册该活动");
+                throw new Exception("Application already submitted or registered for this activity");
 
             var request = new ActivityRegistrationRequest
             {
@@ -193,9 +189,9 @@ namespace ADProject.Repositories
 
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "user sign for activity",
-                Content = $"{username} sign for activity：{activity.Title}",
-                ReceiverId = activity.Creator.UserId // 假设管理员ID为2
+                Title = "User signed up for activity",
+                Content = $"{username} signed up for activity: {activity.Title}",
+                ReceiverId = activity.Creator.UserId
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
         }
@@ -204,17 +200,17 @@ namespace ADProject.Repositories
         {
             var user = _context.Users.FirstOrDefault(u => u.Name == username);
             if (user == null)
-                return ("用户不存在");
+                return ("User does not exist");
 
             var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                return ("活动不存在");
+                return ("Activity does not exist");
 
             var existingRequest = _context.ActivityRegistrationRequests
                 .FirstOrDefault(r => r.UserId == user.UserId && r.ActivityId == activityId);
             if (existingRequest != null)
-                return ("已提交过申请或已注册该活动");
-            else return ("未注册过");
+                return ("Application already submitted or registered for this activity");
+            else return ("Not registered yet");
         }
 
         public void ReviewRegistrationRequest(int requestId, string decisionStatus)
@@ -225,10 +221,10 @@ namespace ADProject.Repositories
                 .FirstOrDefault(r => r.Id == requestId);
 
             if (request == null)
-                throw new Exception("申请记录不存在");
+                throw new Exception("Application record does not exist");
 
             if (decisionStatus != "approved" && decisionStatus != "rejected")
-                throw new Exception("审核状态无效");
+                throw new Exception("Invalid review status");
 
             request.Status = decisionStatus;
             request.ReviewedAt = DateTime.UtcNow;
@@ -237,26 +233,25 @@ namespace ADProject.Repositories
             {
                 var activity = request.Activity;
 
-                // 避免重复添加
                 if (!activity.RegisteredUsers.Any(u => u.UserId == request.UserId))
                 {
                     activity.RegisteredUsers.Add(request.User);
                     var CreateSystemMessageDto = new CreateSystemMessageDto
                     {
-                        Title = "your sign for activity has been approved",
-                        Content = $"{request.User.Name} sign for：{activity.Title} has been approved",
+                        Title = "Your sign-up for activity has been approved",
+                        Content = $"{request.User.Name} sign-up for: {activity.Title} has been approved",
                         ReceiverId = request.User.UserId
                     };
                     _systemMessageRepository.Create(CreateSystemMessageDto);
                 }
             }
 
-            if(decisionStatus == "rejected")
+            if (decisionStatus == "rejected")
             {
                 var CreateSystemMessageDto = new CreateSystemMessageDto
                 {
-                    Title = "your sign for activity has been rejected",
-                    Content = $"{request.User.Name} sign for：{request.Activity.Title} has been rejected",
+                    Title = "Your sign-up for activity has been rejected",
+                    Content = $"{request.User.Name} sign-up for: {request.Activity.Title} has been rejected",
                     ReceiverId = request.User.UserId
                 };
                 _systemMessageRepository.Create(CreateSystemMessageDto);
@@ -277,15 +272,8 @@ namespace ADProject.Repositories
                 .Where(a => a.Tags.Any(t => t.Name.Contains(keyword)))
                 .ToList();
 
-            // 合并并去重
-            var allMatches = titleMatches
-                .Concat(tagMatches)
-                .Distinct()
-                .ToList();
-
-            return allMatches;
+            return titleMatches.Concat(tagMatches).Distinct().ToList();
         }
-
 
         public void AddToFavourites(string username, int activityId)
         {
@@ -293,14 +281,14 @@ namespace ADProject.Repositories
                 .Include(u => u.favouriteActivities)
                 .FirstOrDefault(u => u.Name == username);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
 
             var activity = _context.Activities.Find(activityId);
             if (activity == null)
-                throw new Exception("活动不存在");
+                throw new Exception("Activity does not exist");
 
             if (user.favouriteActivities.Any(a => a.ActivityId == activityId))
-                throw new Exception("活动已在收藏列表");
+                throw new Exception("Activity is already in the favourites list");
 
             user.favouriteActivities.Add(activity);
             _context.SaveChanges();
@@ -312,12 +300,12 @@ namespace ADProject.Repositories
                 .Include(u => u.favouriteActivities)
                 .FirstOrDefault(u => u.Name == username);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
 
             var activity = user.favouriteActivities
                 .FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                throw new Exception("该活动不在收藏列表");
+                throw new Exception("This activity is not in the favourites list");
 
             user.favouriteActivities.Remove(activity);
             _context.SaveChanges();
@@ -330,7 +318,7 @@ namespace ADProject.Repositories
                 .FirstOrDefault(u => u.Name == username);
 
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
 
             return user.favouriteActivities;
         }
@@ -342,7 +330,7 @@ namespace ADProject.Repositories
                 .FirstOrDefault(u => u.Name == username);
 
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
 
             return user.RegisteredActivities;
         }
@@ -353,7 +341,7 @@ namespace ADProject.Repositories
                 .Include(u => u.RegisteredActivities)
                 .FirstOrDefault(u => u.UserId == userId);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
             return user.RegisteredActivities;
         }
 
@@ -364,17 +352,16 @@ namespace ADProject.Repositories
                 .Include(u => u.favouriteActivities)
                 .FirstOrDefault(u => u.Name == username);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
             var activities = GetAll().Where(a => a.Creator.Name == username).ToList();
             return activities.Distinct().ToList();
-
         }
 
         public List<ActivityRegistrationRequest> GetOrganizerRegistrationRequests(string username)
         {
             var user = _context.Users.FirstOrDefault(u => u.Name == username);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
             var activityIdList = GetLoginOrganizerActivities(username)
                 .Select(a => a.ActivityId)
                 .ToList();
@@ -383,9 +370,8 @@ namespace ADProject.Repositories
                 .Where(r => activityIdList.Contains(r.ActivityId) && r.Status == "pending")
                 .ToList();
             if (requests == null || requests.Count == 0)
-                throw new Exception("没有待处理的注册申请");
+                throw new Exception("No pending registration requests");
             return requests;
-
         }
 
         public int GetActivityCountByActivityId(int activityId)
@@ -394,7 +380,7 @@ namespace ADProject.Repositories
                 .Include(a => a.RegisteredUsers)
                 .FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                throw new Exception("活动不存在");
+                throw new Exception("Activity does not exist");
             return activity.RegisteredUsers.Count;
         }
 
@@ -402,8 +388,8 @@ namespace ADProject.Repositories
         {
             var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                throw new Exception("活动不存在");
-            activity.Status = "banned"; // 将活动状态设置为取消
+                throw new Exception("Activity does not exist");
+            activity.Status = "banned";
             _context.SaveChanges();
         }
 
@@ -411,8 +397,8 @@ namespace ADProject.Repositories
         {
             var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                throw new Exception("活动不存在");
-            activity.Status = "approved"; // 将活动状态设置为已批准
+                throw new Exception("Activity does not exist");
+            activity.Status = "approved";
             _context.SaveChanges();
         }
 
@@ -428,13 +414,13 @@ namespace ADProject.Repositories
         {
             var user = _context.Users.FirstOrDefault(u => u.Name == username);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
             var requests = _context.ActivityRegistrationRequests
                 .Include(r => r.Activity)
                 .Where(r => r.UserId == user.UserId)
                 .ToList();
             if (requests == null || requests.Count == 0)
-                throw new Exception("没有注册申请");
+                throw new Exception("No registration applications");
             return requests;
         }
 
@@ -442,18 +428,14 @@ namespace ADProject.Repositories
         {
             var activity = _context.Activities
                 .Include(a => a.RegisteredUsers)
-                //.Include(a => a.ActivityRegistrationRequests)
                 .FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                throw new Exception("活动不存在");
+                throw new Exception("Activity does not exist");
 
             var user = _context.Users.FirstOrDefault(u => u.Name == username);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
 
-            // 1) 如果活动已报名用户中包含该用户，则移除
-            // --- 取决于 RegisteredUsers 的类型与元素结构 ---
-            // 情况A：RegisteredUsers 是 Users 集合
             if (activity.RegisteredUsers != null &&
                 activity.RegisteredUsers.Any(u => u.UserId == user.UserId))
             {
@@ -461,17 +443,6 @@ namespace ADProject.Repositories
                 activity.RegisteredUsers.Remove(regUser);
             }
 
-            // 情况B：RegisteredUsers 是报名关联表(例如 ActivityUser / Registration)集合
-            // if (activity.RegisteredUsers != null &&
-            //     activity.RegisteredUsers.Any(r => r.UserId == user.UserId))
-            // {
-            //     var reg = activity.RegisteredUsers.First(r => r.UserId == user.UserId);
-            //     activity.RegisteredUsers.Remove(reg);
-            //     // 如果需要物理删除关联实体（而不是仅从导航集合移除），可额外调用：
-            //     // _context.Remove(reg);
-            // }
-
-            // 2) 查找并删除该用户对该活动的注册申请
             var request = _context.ActivityRegistrationRequests
                 .FirstOrDefault(r => r.UserId == user.UserId && r.ActivityId == activityId);
             if (request != null)
@@ -479,16 +450,14 @@ namespace ADProject.Repositories
                 _context.ActivityRegistrationRequests.Remove(request);
             }
 
-            // 3) 保存更改
             _context.SaveChanges();
 
-            // 4) （可选）发送系统消息，仅当确实删除了申请时再发
             if (request != null)
             {
                 var createSystemMessageDto = new CreateSystemMessageDto
                 {
-                    Title = "cancel registion request",
-                    Content = $"{user.Name} cancel registion for {activity.Title} ",
+                    Title = "Cancel registration request",
+                    Content = $"{user.Name} cancelled registration for {activity.Title}",
                     ReceiverId = user.UserId
                 };
                 _systemMessageRepository.Create(createSystemMessageDto);
@@ -498,14 +467,11 @@ namespace ADProject.Repositories
         public List<int> GetRandomRecommendation()
         {
             var today = DateTime.Today;
-            // 1. 从数据库取出所有活动到内存
             var allActivities = _context.Activities.ToList();
 
-            // 2. 过滤出 EndTime 在今天之后的活动
             var future = allActivities
                 .Where(a =>
                 {
-                    // 解析 "yyyy/MM/dd HH:mm" 格式的 EndTime
                     if (DateTime.TryParseExact(
                             a.EndTime,
                             "yyyy/MM/dd HH:mm",
@@ -518,13 +484,11 @@ namespace ADProject.Repositories
                     return false;
                 });
 
-            // 3. 随机打乱并取前 5 条
             var rand = new Random();
             var top5 = future
                 .OrderBy(_ => rand.Next())
                 .Take(5);
 
-            // 4. 只返回 ActivityId 列表
             return top5
                 .Select(a => a.ActivityId)
                 .ToList();
@@ -536,23 +500,21 @@ namespace ADProject.Repositories
                 .Include(u => u.favouriteActivities)
                 .FirstOrDefault(u => u.UserId == userId);
             if (user == null)
-                throw new Exception("用户不存在");
+                throw new Exception("User does not exist");
             return user.favouriteActivities;
-
-
         }
 
         public void cancelActivity(int activityId)
         {
             var activity = _context.Activities.FirstOrDefault(a => a.ActivityId == activityId);
             if (activity == null)
-                throw new Exception("活动不存在");
-            activity.Status = "cancelled"; // 将活动状态设置为取消
+                throw new Exception("Activity does not exist");
+            activity.Status = "cancelled";
             var CreateSystemMessageDto = new CreateSystemMessageDto
             {
-                Title = "activity has been cancelled",
-                Content = $"{activity.Title} has been cancelled。",
-                ReceiverId = activity.Creator.UserId // 通知活动创建者
+                Title = "Activity has been cancelled",
+                Content = $"{activity.Title} has been cancelled.",
+                ReceiverId = activity.Creator.UserId
             };
             _systemMessageRepository.Create(CreateSystemMessageDto);
             _context.SaveChanges();
@@ -560,31 +522,26 @@ namespace ADProject.Repositories
             {
                 var userMessage = new CreateSystemMessageDto
                 {
-                    Title = "activity has been cancelled",
-                    Content = $"{activity.Title} has been cancelled。",
-                    ReceiverId = user.UserId // 通知所有注册用户
+                    Title = "Activity has been cancelled",
+                    Content = $"{activity.Title} has been cancelled.",
+                    ReceiverId = user.UserId
                 };
                 _systemMessageRepository.Create(userMessage);
             }
-            // 清除注册用户列表
             activity.RegisteredUsers.Clear();
-            // 清除收藏用户列表
             activity.FavouritedByUsers.Clear();
-            // 清除活动申请列表
             var requests = _context.ActivityRegistrationRequests
                 .Where(r => r.ActivityId == activityId).ToList();
             foreach (var request in requests)
-                {
+            {
                 _context.ActivityRegistrationRequests.Remove(request);
             }
-            // 清除活动请求列表
             var activityRequests = _context.ActivityRequest
                 .Where(r => r.ActivityId == activityId).ToList();
             foreach (var activityRequest in activityRequests)
-                {
+            {
                 _context.ActivityRequest.Remove(activityRequest);
             }
-            // 保存更改
             _context.SaveChanges();
         }
     }

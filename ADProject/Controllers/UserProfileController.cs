@@ -15,19 +15,19 @@ namespace ADProject.Controllers
             _repository = repository;
         }
 
-        // PUT: 修改或新建 Profile
+        // PUT: Update or create Profile
         [HttpPut("update")]
         public IActionResult UpdateProfile([FromBody] UpdateUserProfileDto dto)
         {
-            // 👇 从 Session 获取当前用户名
+            // Get the current username from session
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录，无法修改资料");
+                return Unauthorized("Not logged in, unable to update profile");
 
             try
             {
                 _repository.UpsertProfile(username, dto);
-                return Ok(new { message = "资料已更新或创建成功" });
+                return Ok(new { message = "Profile has been updated or created successfully" });
             }
             catch (Exception ex)
             {
@@ -35,20 +35,19 @@ namespace ADProject.Controllers
             }
         }
 
-        // GET: 获取当前用户的 Profile
+        // GET: Get the current user's Profile
         [HttpGet("me")]
         public IActionResult GetMyProfile()
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录，无法获取资料");
+                return Unauthorized("Not logged in, unable to retrieve profile");
 
             var profile = _repository.GetProfileByUsername(username);
             if (profile == null)
-                return NotFound("尚未创建用户资料");
+                return NotFound("User profile has not been created yet");
 
             return Ok(profile);
         }
     }
-
 }

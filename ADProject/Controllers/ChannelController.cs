@@ -21,13 +21,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户，无法创建活动");
+                return Unauthorized("Unauthenticated user, unable to create channel");
             if (userType != "organizer")
-                return BadRequest("只有组织者可以创建活动");
+                return BadRequest("Only organizers can create channels");
             try
             {
                 _repository.CreateChannel(username, dto);
-                return Ok("频道创建请求已提交，等待管理员审批");
+                return Ok("Channel creation request has been submitted and is awaiting admin approval");
             }
             catch (Exception ex)
             {
@@ -41,13 +41,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有admin可以审批活动申请");
+                return BadRequest("Only admin can approve channel requests");
             try
             {
                 _repository.ReviewChannelRequest(id, status);
-                return Ok("频道请求已处理");
+                return Ok("Channel request processed successfully");
             }
             catch (Exception ex)
             {
@@ -61,14 +61,14 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "organizer")
-                return BadRequest("只有organizer可以发布信息");
+                return BadRequest("Only organizers can post messages");
             var channelId = dto.ChannelId;
             try
             {
                 _repository.CreateChannelMessage(channelId, dto, username);
-                return Ok("消息已成功发布！");
+                return Ok("Message posted successfully");
             }
             catch (Exception ex)
             {
@@ -81,12 +81,11 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.User.Identity?.Name ?? HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("用户未登录");
-
+                return Unauthorized("Unauthenticated user");
             try
             {
                 _repository.JoinChannel(username, channelId);
-                return Ok("已成功加入频道");
+                return Ok("Joined channel successfully");
             }
             catch (Exception ex)
             {
@@ -99,12 +98,11 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.User.Identity?.Name ?? HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("用户未登录");
-
+                return Unauthorized("Unauthenticated user");
             try
             {
                 _repository.SubmitChannelReport(username, dto.ChannelId, dto.ReportContent);
-                return Ok("举报已提交，感谢你的反馈");
+                return Ok("Report submitted, thank you for your feedback");
             }
             catch (Exception ex)
             {
@@ -118,13 +116,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有admin可以审核");
+                return BadRequest("Only admin can review reports");
             try
             {
                 _repository.ReviewChannelReport(id, status);
-                return Ok($"举报已更新为状态：{status}");
+                return Ok($"Report status updated to: {status}");
             }
             catch (Exception ex)
             {
@@ -137,7 +135,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             try
             {
                 var channels = _repository.GetAllChannels();
@@ -147,7 +145,6 @@ namespace ADProject.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
-
         }
 
         [HttpGet("/channel/getChannelById")]
@@ -155,19 +152,18 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             try
             {
                 var channel = _repository.GetChannelById(channelId);
                 if (channel == null)
-                    return NotFound("频道不存在");
+                    return NotFound("Channel not found");
                 return Ok(channel);
             }
             catch (Exception ex)
             {
                 return BadRequest(new { error = ex.Message });
             }
-
         }
 
         [HttpGet("channels/getChannelMessages")]
@@ -175,7 +171,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             try
             {
                 var messages = _repository.GetChannelMessages(channelId);
@@ -192,7 +188,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             try
             {
                 var members = _repository.GetChannelMembers(channelId);
@@ -209,7 +205,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             try
             {
                 var channels = _repository.GetUserJoinedChannels(username);
@@ -226,7 +222,7 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             try
             {
                 var channels = _repository.GetOrganizerOwnedChannel(username);
@@ -243,11 +239,11 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             try
             {
                 _repository.UpdateChannel(dto, username);
-                return Ok("频道信息已更新");
+                return Ok("Channel information updated successfully");
             }
             catch (Exception ex)
             {
@@ -261,13 +257,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有admin可以封禁频道");
+                return BadRequest("Only admin can ban channels");
             try
             {
                 _repository.banChannel(channelId);
-                return Ok("频道已被封禁");
+                return Ok("Channel has been banned");
             }
             catch (Exception ex)
             {
@@ -281,13 +277,13 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有admin可以解封频道");
+                return BadRequest("Only admin can unban channels");
             try
             {
                 _repository.UnbanChannel(channelId);
-                return Ok("频道已被解封");
+                return Ok("Channel has been unbanned");
             }
             catch (Exception ex)
             {
@@ -301,9 +297,9 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有admin可以查看频道举报");
+                return BadRequest("Only admin can view channel reports");
             try
             {
                 var reports = _repository.GetAllChannelReports();
@@ -321,9 +317,9 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             var userType = HttpContext.Session.GetString("UserType");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             if (userType != "admin")
-                return BadRequest("只有admin可以查看频道申请");
+                return BadRequest("Only admin can view channel requests");
             try
             {
                 var requests = _repository.GetAllChannelRequests();
@@ -340,14 +336,14 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("未登录用户！");
+                return Unauthorized("Unauthenticated user");
             var userType = HttpContext.Session.GetString("UserType");
             if (userType != "user")
-                return BadRequest("只有普通用户可以退出频道");
+                return BadRequest("Only normal users can quit channels");
             try
             {
                 _repository.quitChannel(username, channelId);
-                return Ok("已成功退出频道");
+                return Ok("Quit channel successfully");
             }
             catch (Exception ex)
             {
@@ -360,14 +356,14 @@ namespace ADProject.Controllers
         {
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-                return Unauthorized("unlogin user！");
+                return Unauthorized("Unauthenticated user");
             var userType = HttpContext.Session.GetString("UserType");
             if (userType != "organizer")
-                return BadRequest("only organizer can cancel channel");
+                return BadRequest("Only organizer can cancel channel");
             try
             {
                 _repository.cancelChannel(channelId);
-                return Ok("channel has been cancelled");
+                return Ok("Channel has been cancelled");
             }
             catch (Exception ex)
             {
@@ -376,4 +372,3 @@ namespace ADProject.Controllers
         }
     }
 }
-

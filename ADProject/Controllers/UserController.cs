@@ -1,6 +1,5 @@
 ﻿using ADProject.Models;
 using ADProject.Repositories;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 
@@ -39,13 +38,13 @@ namespace ADProject.Controllers
 
             if (!emailRegex.IsMatch(user.Email))
             {
-                return BadRequest("邮箱格式不正确！");
+                return BadRequest("Invalid email format");
             }
 
             if (_repository.ExistsByEmail(user.Email))
-                return BadRequest("邮箱已存在！");
+                return BadRequest("Email already exists");
             if (_repository.ExistsByName(user.Name))
-                return BadRequest("用户名已存在！");
+                return BadRequest("Username already exists");
             User newUser = new User
             {
                 Name = user.Name,
@@ -65,13 +64,13 @@ namespace ADProject.Controllers
 
             if (!emailRegex.IsMatch(user.Email))
             {
-                return BadRequest("邮箱格式不正确！");
+                return BadRequest("Invalid email format");
             }
 
             if (_repository.ExistsByEmail(user.Email))
-                return BadRequest("邮箱已存在！");
+                return BadRequest("Email already exists");
             if (_repository.ExistsByName(user.Name))
-                return BadRequest("用户名已存在！");
+                return BadRequest("Username already exists");
             User newUser = new User
             {
                 Name = user.Name,
@@ -103,14 +102,14 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             if (username is null)
             {
-                return Unauthorized("请先登录！");
+                return Unauthorized("Please log in first");
             }
             if (HttpContext.Session.GetString("UserType") != "admin")
             {
-                return Unauthorized("只有管理员可以封禁用户！");
+                return Unauthorized("Only admin can ban users");
             }
             _repository.banUser(id);
-            return Ok("用户已被封禁");
+            return Ok("User has been banned");
         }
 
         [HttpPut("/UnbanUser")]
@@ -119,14 +118,14 @@ namespace ADProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             if (username is null)
             {
-                return Unauthorized("请先登录！");
+                return Unauthorized("Please log in first");
             }
             if (HttpContext.Session.GetString("UserType") != "admin")
             {
-                return Unauthorized("只有管理员可以解封用户！");
+                return Unauthorized("Only admin can unban users");
             }
             _repository.UnbanUser(id);
-            return Ok("用户已被解封");
+            return Ok("User has been unbanned");
         }
     }
 }
